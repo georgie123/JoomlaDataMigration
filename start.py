@@ -72,3 +72,4 @@ for stepScript in listStepScripts:
     pathStepScript = dirStepScripts + '\\' + stepScript
     exec(compile(open(pathStepScript, 'rb').read(), pathStepScript, 'exec'))
 
+print(colored('\nEND OF DATA MIGRATION!', 'green'))
