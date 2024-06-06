@@ -24,3 +24,4 @@ for stepScript in listStepScripts:
     # EXECUTE SCRIPTS
     pathStepScript = dirStepScripts + '\\' + stepScript
     exec(compile(open(pathStepScript, 'rb').read(), pathStepScript, 'exec'))
+
