@@ -6,17 +6,15 @@ import sys
 ############################################# DIRECTORIES
 pycharmDirectoryGeorgesSamsungC = r'C:/Users/georg/PycharmProjects/'
 pycharmDirectoryGeorgesDesktopD = r'C:/Users/Georges/PycharmProjects/'
-pycharmDirectory = ''
-accessFile = ''
 
 if os.path.isdir(pycharmDirectoryGeorgesSamsungC):
-    print(colored('\nWe work from ' + pycharmDirectoryGeorgesSamsungC, 'green'))
+    print(colored('We work from ' + pycharmDirectoryGeorgesSamsungC, 'green'))
     pycharmDirectory = pycharmDirectoryGeorgesSamsungC
     accessFile = pycharmDirectory + 'gjcY8d4q6mvC2WXy.ztxt'
     sys.path.append(pycharmDirectory + r'Private/JoomlaMigration_HG2')
 
 if os.path.isdir(pycharmDirectoryGeorgesDesktopD):
-    print(colored('\nWe work from ' + pycharmDirectoryGeorgesDesktopD, 'green'))
+    print(colored('We work from ' + pycharmDirectoryGeorgesDesktopD, 'green'))
     pycharmDirectory = pycharmDirectoryGeorgesDesktopD
     accessFile = pycharmDirectory + 'gjcY8d4q6mvC2WXy.ztxt'
     sys.path.append(pycharmDirectory + r'Private/JoomlaMigration_HG2')
