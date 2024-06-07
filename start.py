@@ -1,8 +1,9 @@
 
 import os
 from termcolor import colored
+import sys
+import pandas as pd
 
-print(colored('\nJOOMLA DATA MIGRATION', 'blue'))
 import _params
 from _params import hostTarget, portDbTarget, userDbTarget, nameDbTarget, pwdDbTarget, prefixTableTarget, domainTarget
 from _params import hostSource, portDbSource, userDbSource, nameDbSource, pwdDbSource, prefixTableSource, domainSource
@@ -12,22 +13,27 @@ from sqlalchemy import create_engine, text
 engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget))
 engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource))
 
+# Escape function
+def escape_value(value):
+    value_str = str(value)
+    value_str = value_str.replace("\\", "\\\\")
+    value_str = value_str.replace("'", "\\'")
+    value_str = value_str.replace(":", "\\:")
+    return value_str
 
 ############### GET SPECIFIC TARGET IDS
 print(colored('\nGET SPECIFIC TARGET IDS', 'blue'))
 conTarget = engineTarget.connect()
 
 # GET SUPER-USER OF THE TARGET WEBSITE
-sqlTargetSuperId = '''SELECT user_id AS super_id FROM ''' + prefixTableTarget + '''user_usergroup_map WHERE group_id = (SELECT MIN(id) AS super_group FROM ''' + prefixTableTarget + '''usergroups WHERE title LIKE "Super Users") ;'''
+sqlTargetSuperId = '''SELECT MIN(user_id) AS super_id FROM ''' + prefixTableTarget + '''user_usergroup_map WHERE group_id = 8 ;'''
 superIdTarget = conTarget.execute(text(sqlTargetSuperId)).scalar()
 
 # GET WORKFLOW BASIC STAGE ID OF THE TARGET WEBSITE
-conTarget = engineTarget.connect()
 sqlTargetBasicStageId = '''SELECT id FROM ''' + prefixTableTarget + '''workflow_stages WHERE title LIKE "COM_WORKFLOW_BASIC_STAGE" ;'''
 BasicStageIdTarget = conTarget.execute(text(sqlTargetBasicStageId)).scalar()
 
 # GET ARTICLES TYPE ID OF THE TARGET WEBSITE
-conTarget = engineTarget.connect()
 sqlTargetArticlesTypeId = '''SELECT type_id FROM ''' + prefixTableTarget + '''content_types WHERE type_alias LIKE "com_content.article" AND type_title LIKE "Article" ;'''
 ArticlesTypeIdTarget = conTarget.execute(text(sqlTargetArticlesTypeId)).scalar()
 
@@ -53,8 +59,7 @@ if superIdTarget:
     print(colored('Target workflow basic stage id: ' + str(BasicStageIdTarget) + ' (BasicStageIdTarget)', 'green'))
     print(colored('Target articles type id: ' + str(ArticlesTypeIdTarget) + ' (ArticlesTypeIdTarget)', 'green'))
 else:
-    print(colored('Warning : we can not get the target super-user id!', 'red'))
-    sys.exit()
+    print(colored('Warning : we can not get the target super-user id!', 'yellow'))
 
 
 ############### RUN STEP SCRIPTS
@@ -72,4 +77,10 @@ for stepScript in listStepScripts:
     pathStepScript = dirStepScripts + '\\' + stepScript
     exec(compile(open(pathStepScript, 'rb').read(), pathStepScript, 'exec'))
 
+
 print(colored('\nEND OF DATA MIGRATION!', 'green'))
+
+conTarget.close()
+engineTarget.dispose()
+
+engineSource.dispose()

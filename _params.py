@@ -3,23 +3,24 @@ import os
 from termcolor import colored
 import sys
 
-############################################# DIRECTORIES
+print(colored('\nJOOMLA DATA MIGRATION', 'blue'))
+
+############### PYCHARM DIRECTORY
 pycharmDirectoryGeorgesSamsungC = r'C:/Users/georg/PycharmProjects/'
 pycharmDirectoryGeorgesDesktopD = r'C:/Users/Georges/PycharmProjects/'
 
+############### DECLARE THE PYCHARM DIRECTORY AND FIND THE ACCESS FILE INTO
 if os.path.isdir(pycharmDirectoryGeorgesSamsungC):
     print(colored('We work from ' + pycharmDirectoryGeorgesSamsungC, 'green'))
     pycharmDirectory = pycharmDirectoryGeorgesSamsungC
     accessFile = pycharmDirectory + 'gjcY8d4q6mvC2WXy.ztxt'
-    sys.path.append(pycharmDirectory + r'Private/JoomlaMigration_HG2')
 
 if os.path.isdir(pycharmDirectoryGeorgesDesktopD):
     print(colored('We work from ' + pycharmDirectoryGeorgesDesktopD, 'green'))
     pycharmDirectory = pycharmDirectoryGeorgesDesktopD
     accessFile = pycharmDirectory + 'gjcY8d4q6mvC2WXy.ztxt'
-    sys.path.append(pycharmDirectory + r'Private/JoomlaMigration_HG2')
-######################################### DIRECTORIES
 
+############### FIND THE ACCESS DATA
 file = open(accessFile, 'r')
 lines = file.readlines()
 
