@@ -3,8 +3,8 @@ from sqlalchemy.orm import sessionmaker
 
 usersTables = ['users', 'user_keys', 'user_notes', 'user_profiles', 'usergroups', 'user_usergroup_map', 'viewlevels', 'contact_details', 'session']
 
-print(colored('\nAjouter la gestion du champs user_mfa !!!', 'yellow'))
-print(colored('En effet il n\'existe pas dans certaines version de Joomla (il n\'existe pas dans hg-map1, mais il existe dans le 2).', 'yellow'))
+print(colored('\nAjouter la gestion du champs user_mfa !', 'yellow'))
+print(colored('En effet il n\'existe pas dans certaines versions de Joomla (il n\'existe pas dans hg-map1, mais il existe dans le 2).', 'yellow'))
 
 print(colored('\nUSERS DATA', 'blue'))
 
