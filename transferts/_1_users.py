@@ -15,7 +15,7 @@ mySessionCleanTarget = sessionmaker(bind=engineTarget)
 SessionCleanTarget = mySessionCleanTarget()
 SessionCleanTarget.begin()
 
-# CLEAN TARGET TABLE
+# CLEAN TARGET TABLES
 for t in usersTables:
     SessionCleanTarget.execute(text('''TRUNCATE ''' + prefixTableTarget + t + ''' ;'''))
     print(colored('The target table #_' + t + ' has been emptied.', 'green'))
@@ -25,7 +25,7 @@ SessionCleanTarget.close()
 
 
 ################ IMPORTING
-print('Importing...')
+print('\nImporting...')
 
 for t in usersTables:
     print(colored('\nTable #_' + t, 'blue'))

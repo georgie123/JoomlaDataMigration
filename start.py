@@ -68,7 +68,9 @@ print(colored('\nDATA MIGRATION IN PROGRESS...', 'blue'))
 # GET SCRIPT STEPS
 script_directory = os.path.dirname(os.path.abspath(__file__))
 dirStepScripts = os.path.join(script_directory, 'transferts')
-listStepScripts = os.listdir(dirStepScripts)
+listStepScripts = sorted(os.listdir(dirStepScripts), reverse=False)
+
+# print(listStepScripts)
 
 # LOOP ON SCRIPTS FROM DIRECTORY TRANSFERTS
 for stepScript in listStepScripts:
