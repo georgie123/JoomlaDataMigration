@@ -13,13 +13,56 @@ from sqlalchemy import create_engine, text
 engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget))
 engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource))
 
-# Escape function
+
+############### FUNCTION: ESCAPE SOME CHAR DURING SQL TRANSFERT
 def escape_value(value):
     value_str = str(value)
     value_str = value_str.replace("\\", "\\\\")
     value_str = value_str.replace("'", "\\'")
     value_str = value_str.replace(":", "\\:")
+
     return value_str
+
+
+############### FUNCTION: FIND IF A TABLE EXIST IN TARGET
+print('\nDébut')
+def isTableExistInTarget(myTable):
+    sqlTableTargetExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + myTable + '''\' ;'''
+    conTarget = engineTarget.connect()
+    myResult = conTarget.execute(text(sqlTableTargetExist)).scalar()
+
+    # CLOSE CONNECTION
+    conTarget.close()
+    engineTarget.dispose()
+
+    # MANAGE RESULT
+    if myResult == prefixTableTarget + myTable:
+        myAnswer = 'Yes'
+    else:
+        myAnswer = 'No'
+
+    return myAnswer
+
+
+############### FUNCTION: FIND IF A TABLE EXIST IN SOURCE
+print('\nDébut')
+def isTableExistInSource(myTable):
+    sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
+    conSource = engineSource.connect()
+    myResult = conSource.execute(text(sqlTableSourceExist)).scalar()
+
+    # CLOSE CONNECTION
+    conSource.close()
+    engineSource.dispose()
+
+    # MANAGE RESULT
+    if myResult == prefixTableSource + myTable:
+        myAnswer = 'Yes'
+    else:
+        myAnswer = 'No'
+
+    return myAnswer
+
 
 ############### GET SPECIFIC TARGET IDS
 print(colored('\nGET SPECIFIC TARGET IDS', 'blue'))
