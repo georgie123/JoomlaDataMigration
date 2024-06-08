@@ -25,7 +25,6 @@ def escape_value(value):
 
 
 ############### FUNCTION: FIND IF A TABLE EXIST IN TARGET
-print('\nDébut')
 def isTableExistInTarget(myTable):
     sqlTableTargetExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + myTable + '''\' ;'''
     conTarget = engineTarget.connect()
@@ -45,7 +44,6 @@ def isTableExistInTarget(myTable):
 
 
 ############### FUNCTION: FIND IF A TABLE EXIST IN SOURCE
-print('\nDébut')
 def isTableExistInSource(myTable):
     sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
     conSource = engineSource.connect()
