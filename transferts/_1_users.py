@@ -1,7 +1,12 @@
 
 from sqlalchemy.orm import sessionmaker
 
-usersTables = ['users', 'user_keys', 'user_notes', 'user_profiles', 'usergroups', 'user_usergroup_map', 'viewlevels', 'contact_details', 'session', 'user_mfa']
+usersTables = [
+    'users', 'user_keys', 'user_notes', 'user_profiles',
+    'contact_details', 'messages', 'messages_cfg', 'privacy_consents', 'privacy_requests',
+    'usergroups', 'user_usergroup_map', 'viewlevels',
+    'session', 'user_mfa', 'action_logs', 'action_logs_users', 'webauthn_credentials'
+]
 
 print(colored('\nUSERS DATA', 'blue'))
 
@@ -80,9 +85,7 @@ for t in usersTables:
                 print('Tables #_' + t + ' working...')
 
                 # GET DATA FROM SOURCE
-                listFields = str(CommonsFieldsList).replace('[', '').replace(']', '').replace("'", '').replace('"',
-                                                                                                               '').replace(
-                    'fulltext', '`fulltext`')
+                listFields = str(CommonsFieldsList).replace('[', '').replace(']', '').replace("'", '').replace('"', '').replace('fulltext', '`fulltext`')
                 sqlSourceUsers = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' ;'''
                 dfSource = pd.read_sql_query(sqlSourceUsers, engineSource)
 
