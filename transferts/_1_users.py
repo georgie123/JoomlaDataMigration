@@ -74,8 +74,8 @@ for t in usersTables:
                 print(colored('The tables #_' + t + ' have the same fields.', 'green'))
             else:
                 print(colored('Warning, the tables #_' + t + ' do not have the same fields:', 'yellow'))
-                # print('Target fields #_users (' + str(len(listTargetFields)) + '):', listTargetFields)
-                # print('Source fields #_users (' + str(len(listSourceFields)) + '):', listSourceFields)
+                # print('Target fields #_' + t + ' (' + str(len(listTargetFields)) + '):', listTargetFields)
+                # print('Source fields #_' + t + ' (' + str(len(listSourceFields)) + '):', listSourceFields)
                 # print('Commons fields (' + str(len(CommonsFieldsList)) + '):', CommonsFieldsList)
                 print('Missing fields in target (' + str(len(missingTargetFieldsList)) + '):', missingTargetFieldsList)
                 print('Missing fields in source (' + str(len(missingSourceFieldsList)) + '):', missingSourceFieldsList,
