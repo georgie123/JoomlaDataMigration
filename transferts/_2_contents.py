@@ -365,13 +365,4 @@ for index, row in dfTargetTextUrlFix.iterrows():
 sessionUrlRewriteUcmContent.commit()
 sessionUrlRewriteUcmContent.close()
 
-
 print(colored('The URL rewrite links has been fixed in the text fields of target table #_ucm_content (removing id from URL articles).', 'green'))
-
-
-print('\nPourquoi les parent_id des articles et catégories de asset sont bons, alors que je régénère les ids ???')
-
-print('\nDans la table asset j\'ai la possibilités de régler les droits globaux des articles')
-print('SELECT * FROM hinot_hg2.hg2_assets where name = "com_content/root.1"')
-
-print('MAis ça nexplique pas pourquoi licone éditer napparait pas par défaut en front')
