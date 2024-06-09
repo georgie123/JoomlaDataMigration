@@ -373,3 +373,5 @@ print('\nPourquoi les parent_id des articles et catégories de asset sont bons, 
 
 print('\nDans la table asset j\'ai la possibilités de régler les droits globaux des articles')
 print('SELECT * FROM hinot_hg2.hg2_assets where name = "com_content/root.1"')
+
+print('MAis ça nexplique pas pourquoi licone éditer napparait pas par défaut en front')
