@@ -104,6 +104,11 @@ for t in contentsTables:
                     CommonsFieldsList.remove('asset_id')
                     print('Field asset_id removed (will be fill later).')
 
+                # REMOVE ASSET_ID FIELD FOR #_CATEGORIES
+                if t == 'categories':
+                    CommonsFieldsList.remove('asset_id')
+                    print('Field asset_id removed (will be fill later).')
+
                 # REMOVE ASSET_ID FIELD FOR #_ASSETS
                 elif t == 'assets':
                     CommonsFieldsList.remove('id')
@@ -218,7 +223,6 @@ sessionWorkflowAssociations.close()
 print(colored(str(len(listMigratedArticles)) + ' insert(s) in target table #_workflow_associations.', 'green'))
 print('Using: listMigratedArticles')
 
-
 ################ FIELD ASSET_ID IN TABLE #_CONTENT
 print(colored('\nField asset_id in table #_content', 'blue'))
 my_session_content_assets = sessionmaker(bind=engineTarget)
@@ -286,4 +290,86 @@ sessionUcmContentType.close()
 
 
 ################ UPDATE TEXT FIELDS FOR #_CONTENT
-################ UPDATE TEXT FIELD FOR #_UCM_CONTENT
+print(colored('\nFields text in table #_content', 'blue'))
+my_session_text_content = sessionmaker(bind=engineTarget)
+sessionTextContent = my_session_text_content()
+session.begin()
+
+sessionTextContent.execute(text('''UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, \'''' + domainSource + '''\', \'''' + domainTarget + ''''), `fulltext` = REPLACE(`fulltext`, \'''' + domainSource + '''', \'''' + domainTarget + '''\') ;'''))
+sessionTextContent.execute(text('''UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), introtext = REPLACE(introtext, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/'), `fulltext` = REPLACE(`fulltext`, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), `fulltext` = REPLACE(`fulltext`, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/') ;'''))
+print(colored('Links to the website has been fixed in the text fields of target table #_content (but not images).', 'green'))
+
+sessionTextContent.commit()
+sessionTextContent.close()
+
+
+################ FIX URL REWRITE
+sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, "/', id, '-', alias, '", "/', alias, '") ;') AS query1, CONCAT('UPDATE ''' + prefixTableTarget + '''content SET `fulltext` = REPLACE(`fulltext`, "/', id, '-', alias, '", "/', alias, '") ;') AS query2 FROM ''' + prefixTableTarget + '''content ;'''
+dfTargetTextUrlFix = pd.read_sql_query(sqlTargetTextUrlFix, engineTarget)
+
+# print('\ndfTargetTextUrlFix:')
+# print(tab(dfTargetTextUrlFix.head(10), headers='keys', tablefmt='psql', showindex=False))
+# print(dfTargetTextUrlFix.shape[0])
+
+my_session_urlrewrite_content = sessionmaker(bind=engineTarget)
+sessionUrlRewriteContent = my_session_urlrewrite_content()
+sessionUrlRewriteContent.begin()
+for index, row in dfTargetTextUrlFix.iterrows():
+
+    myQuery1 = row['query1']
+    myQuery2 = row['query2']
+
+    sessionUrlRewriteContent.execute(text(myQuery1))
+    sessionUrlRewriteContent.execute(text(myQuery2))
+
+    # print(myQuery1)
+    # print(myQuery2)
+
+sessionUrlRewriteContent.commit()
+sessionUrlRewriteContent.close()
+print(colored('The URL rewrite links has been fixed in the text fields of target table #_content (removing id from URL articles).', 'green'))
+
+
+################ UPDATE TEXT FIELDS FOR #_UCM_CONTENT
+print(colored('\nFields text in table #_ucm_content', 'blue'))
+my_session_text_ucm = sessionmaker(bind=engineTarget)
+sessionTextUcm = my_session_text_ucm()
+sessionTextUcm.begin()
+
+sessionTextUcm.execute(text('''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, \'''' + domainSource + '''\', \'''' + domainTarget + '''') ;'''))
+sessionTextUcm.execute(text('''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), core_body = REPLACE(core_body, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/') ;'''))
+print(colored('Links to the website has been fixed in the field core_body of target table #_ucm_content (but not images).', 'green'))
+
+sessionTextUcm.commit()
+sessionTextUcm.close()
+
+################ FIX URL REWRITE
+sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, "/', id, '-', alias, '", "/', alias, '") ;') AS query1 FROM ''' + prefixTableTarget + '''content ;'''
+dfTargetTextUrlFix = pd.read_sql_query(sqlTargetTextUrlFix, engineTarget)
+
+# print('\ndfTargetTextUrlFix:')
+# print(tab(dfTargetTextUrlFix.head(10), headers='keys', tablefmt='psql', showindex=False))
+# print(dfTargetTextUrlFix.shape[0])
+
+my_session_urlrewrite_ucm_content = sessionmaker(bind=engineTarget)
+sessionUrlRewriteUcmContent = my_session_urlrewrite_ucm_content()
+sessionUrlRewriteUcmContent.begin()
+for index, row in dfTargetTextUrlFix.iterrows():
+
+    myQuery1 = row['query1']
+
+    sessionUrlRewriteUcmContent.execute(text(myQuery1))
+
+    # print(myQuery1)
+
+sessionUrlRewriteUcmContent.commit()
+sessionUrlRewriteUcmContent.close()
+
+
+print(colored('The URL rewrite links has been fixed in the text fields of target table #_ucm_content (removing id from URL articles).', 'green'))
+
+
+print('\nPourquoi les parent_id des articles et catégories de asset sont bons, alors que je régénère les ids ???')
+
+print('\nDans la table asset j\'ai la possibilités de régler les droits globaux des articles')
+print('SELECT * FROM hinot_hg2.hg2_assets where name = "com_content/root.1"')
