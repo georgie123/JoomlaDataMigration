@@ -17,7 +17,7 @@ mySessionCleanTarget = sessionmaker(bind=engineTarget)
 SessionCleanTarget = mySessionCleanTarget()
 SessionCleanTarget.begin()
 
-# CLEAN TARGET TABLES
+# EMPTY TARGET TABLES
 for t in usersTables:
 
     if isTableExistInTarget(t) == 'Yes':

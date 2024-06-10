@@ -16,7 +16,7 @@ mySessionCleanTarget = sessionmaker(bind=engineTarget)
 SessionCleanTarget = mySessionCleanTarget()
 SessionCleanTarget.begin()
 
-# CLEAN TARGET TABLES
+# CLEAN OR EMPTY TARGET TABLES
 for t in contentsTables:
     if t == 'assets':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE name LIKE "com_content.article.%" OR name LIKE "com_content.category.%" OR name LIKE "#__ucm_content.%" ;'''))
@@ -262,8 +262,8 @@ sessionUcmContentAssets.commit()
 sessionUcmContentAssets.close()
 
 
-################ FIELD PARENT_ID IN TABLE #_ASSETS
-print(colored('\nField parent_id in table #_assets', 'blue'))
+################ FIELD PARENT_ID IN TABLE #_ASSETS FOR ARTICLES
+print(colored('\nField parent_id in table #_assets for articles', 'blue'))
 sqlTargetAssetsParentIdFix = '''SELECT CONCAT("UPDATE ''' + prefixTableTarget + '''assets SET parent_id = ", ''' + prefixTableTarget + '''assets_2.id, " WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;") AS my_query FROM ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_1 LEFT JOIN ''' + prefixTableTarget + '''content ON ''' + prefixTableTarget + '''assets_1.name = CONCAT("com_content.article.", ''' + prefixTableTarget + '''content.id) LEFT JOIN ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_2 ON ''' + prefixTableTarget + '''content.catid = REPLACE(''' + prefixTableTarget + '''assets_2.name, "com_content.category.", "") WHERE ''' + prefixTableTarget + '''assets_1.name LIKE "com_content.article.%%" ;'''
 dfTargetAssetsParentIdFix = pd.read_sql_query(sqlTargetAssetsParentIdFix, engineTarget)
 
@@ -275,16 +275,13 @@ my_session_target_assets_parent_id_fix = sessionmaker(bind=engineTarget)
 sessionTargetAssetsParentIdFix = my_session_target_assets_parent_id_fix()
 sessionTargetAssetsParentIdFix.begin()
 for index, row in dfTargetAssetsParentIdFix.iterrows():
-
     myQuery = row['my_query']
-
     sessionTargetAssetsParentIdFix.execute(text(myQuery))
-
     # print(myQuery)
 
 sessionTargetAssetsParentIdFix.commit()
 sessionTargetAssetsParentIdFix.close()
-print(colored('The field parent_id has been fixed in table #_assets for all articles.', 'green'))
+print(colored('The field parent_id has been fixed in table #_assets for articles.', 'green'))
 
 
 ################ FIELD TYPE_ID IN TABLE #_CONTENTITEM_TAG_MAP
@@ -311,7 +308,6 @@ print(colored('The type_id field in target table #_ucm_content has been fixed.',
 
 sessionUcmContentType.commit()
 sessionUcmContentType.close()
-
 
 
 ################ UPDATE TEXT FIELDS FOR #_CONTENT
