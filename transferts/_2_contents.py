@@ -1,5 +1,6 @@
 
 from sqlalchemy.orm import sessionmaker
+from tabulate import tabulate as tab
 
 contentsTables = [
     'content', 'categories', 'contentitem_tag_map', 'tags',
@@ -274,10 +275,11 @@ dfTargetAssetsParentIdFix = pd.read_sql_query(sqlTargetAssetsParentIdFix, engine
 my_session_target_assets_parent_id_fix = sessionmaker(bind=engineTarget)
 sessionTargetAssetsParentIdFix = my_session_target_assets_parent_id_fix()
 sessionTargetAssetsParentIdFix.begin()
+
 for index, row in dfTargetAssetsParentIdFix.iterrows():
     myQuery = row['my_query']
-    sessionTargetAssetsParentIdFix.execute(text(myQuery))
     # print(myQuery)
+    sessionTargetAssetsParentIdFix.execute(text(myQuery))
 
 sessionTargetAssetsParentIdFix.commit()
 sessionTargetAssetsParentIdFix.close()
@@ -286,7 +288,7 @@ print(colored('The field parent_id has been fixed in table #_assets for articles
 
 ################ FIELD PARENT_ID IN TABLE #_ASSETS FOR CATEGORIES
 print(colored('\nField parent_id in table #_assets for categories', 'blue'))
-sqlTargetAssetsCatParentIdFix = '''SELECT IF(''' + prefixTableTarget + '''assets_2.id IS NULL, CONCAT("UPDATE ''' + prefixTableTarget + '''assets_2 SET parent_id = ''' + str(ContentAssetIdTarget) + '''  WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;"), CONCAT("UPDATE ''' + prefixTableTarget + '''assets_2 SET parent_id = ", ''' + prefixTableTarget + '''assets_2.id, " WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;")) AS my_query FROM ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_1 LEFT JOIN ''' + prefixTableTarget + '''categories ON ''' + prefixTableTarget + '''assets_1.name = CONCAT("com_content.category.", ''' + prefixTableTarget + '''categories.id) LEFT JOIN ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_2 ON ''' + prefixTableTarget + '''categories.parent_id = REPLACE(''' + prefixTableTarget + '''assets_2.name, "com_content.category.", "") WHERE ''' + prefixTableTarget + '''assets_1.name LIKE "com_content.category.%" ;'''
+sqlTargetAssetsCatParentIdFix = '''SELECT IF(''' + prefixTableTarget + '''assets_2.id IS NULL, CONCAT("UPDATE ''' + prefixTableTarget + '''assets SET parent_id = ''' + str(ContentAssetIdTarget) + ''' WHERE id = ",''' + prefixTableTarget + '''assets_1.id, " ;"), CONCAT("UPDATE ''' + prefixTableTarget + '''assets SET parent_id =  ", ''' + prefixTableTarget + '''assets_2.id, " WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;")) AS my_query FROM ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_1 LEFT JOIN ''' + prefixTableTarget + '''categories ON ''' + prefixTableTarget + '''assets_1.name = CONCAT("com_content.category.", ''' + prefixTableTarget + '''categories.id) LEFT JOIN ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_2 ON ''' + prefixTableTarget + '''categories.parent_id = REPLACE(''' + prefixTableTarget + '''assets_2.name, "com_content.category.", "") WHERE ''' + prefixTableTarget + '''assets_1.name LIKE "com_content.category.%%" ;'''
 dfTargetAssetsCatParentIdFix = pd.read_sql_query(sqlTargetAssetsCatParentIdFix, engineTarget)
 
 # print('\ndfTargetAssetsCatParentIdFix:')
@@ -296,10 +298,11 @@ dfTargetAssetsCatParentIdFix = pd.read_sql_query(sqlTargetAssetsCatParentIdFix, 
 my_session_target_assets_cat_parent_id_fix = sessionmaker(bind=engineTarget)
 sessionTargetAssetsCatParentIdFix = my_session_target_assets_cat_parent_id_fix()
 sessionTargetAssetsCatParentIdFix.begin()
+
 for index, row in dfTargetAssetsCatParentIdFix.iterrows():
     myQuery = row['my_query']
-    sessionTargetAssetsCatParentIdFix.execute(text(myQuery))
     # print(myQuery)
+    sessionTargetAssetsCatParentIdFix.execute(text(myQuery))
 
 sessionTargetAssetsCatParentIdFix.commit()
 sessionTargetAssetsCatParentIdFix.close()
