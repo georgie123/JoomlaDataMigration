@@ -123,5 +123,3 @@ for t in usersTables:
     else:
         print(colored('The table does not exist in target DB.', 'yellow'))
         pass
-
-
