@@ -284,6 +284,28 @@ sessionTargetAssetsParentIdFix.close()
 print(colored('The field parent_id has been fixed in table #_assets for articles.', 'green'))
 
 
+################ FIELD PARENT_ID IN TABLE #_ASSETS FOR CATEGORIES
+print(colored('\nField parent_id in table #_assets for categories', 'blue'))
+sqlTargetAssetsCatParentIdFix = '''SELECT IF(''' + prefixTableTarget + '''assets_2.id IS NULL, CONCAT("UPDATE ''' + prefixTableTarget + '''assets_2 SET parent_id = ''' + str(ContentAssetIdTarget) + '''  WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;"), CONCAT("UPDATE ''' + prefixTableTarget + '''assets_2 SET parent_id = ", ''' + prefixTableTarget + '''assets_2.id, " WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;")) AS my_query FROM ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_1 LEFT JOIN ''' + prefixTableTarget + '''categories ON ''' + prefixTableTarget + '''assets_1.name = CONCAT("com_content.category.", ''' + prefixTableTarget + '''categories.id) LEFT JOIN ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_2 ON ''' + prefixTableTarget + '''categories.parent_id = REPLACE(''' + prefixTableTarget + '''assets_2.name, "com_content.category.", "") WHERE ''' + prefixTableTarget + '''assets_1.name LIKE "com_content.category.%" ;'''
+dfTargetAssetsCatParentIdFix = pd.read_sql_query(sqlTargetAssetsCatParentIdFix, engineTarget)
+
+# print('\ndfTargetAssetsCatParentIdFix:')
+# print(tab(dfTargetAssetsCatParentIdFix.head(10), headers='keys', tablefmt='psql', showindex=False))
+# print(dfTargetAssetsCatParentIdFix.shape[0])
+
+my_session_target_assets_cat_parent_id_fix = sessionmaker(bind=engineTarget)
+sessionTargetAssetsCatParentIdFix = my_session_target_assets_cat_parent_id_fix()
+sessionTargetAssetsCatParentIdFix.begin()
+for index, row in dfTargetAssetsCatParentIdFix.iterrows():
+    myQuery = row['my_query']
+    sessionTargetAssetsCatParentIdFix.execute(text(myQuery))
+    # print(myQuery)
+
+sessionTargetAssetsCatParentIdFix.commit()
+sessionTargetAssetsCatParentIdFix.close()
+print(colored('The field parent_id has been fixed in table #_assets for categories.', 'green'))
+
+
 ################ FIELD TYPE_ID IN TABLE #_CONTENTITEM_TAG_MAP
 print(colored('\nField type_id in table #_contentitem_tag_map', 'blue'))
 my_session_contentitem_tag_map_type = sessionmaker(bind=engineTarget)

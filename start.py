@@ -71,12 +71,16 @@ sqlTargetSuperId = '''SELECT MIN(user_id) AS super_id FROM ''' + prefixTableTarg
 superIdTarget = conTarget.execute(text(sqlTargetSuperId)).scalar()
 
 # GET WORKFLOW BASIC STAGE ID OF THE TARGET WEBSITE
-sqlTargetBasicStageId = '''SELECT id FROM ''' + prefixTableTarget + '''workflow_stages WHERE title LIKE "COM_WORKFLOW_BASIC_STAGE" ;'''
+sqlTargetBasicStageId = '''SELECT MIN(id) AS id_workflow_stages FROM ''' + prefixTableTarget + '''workflow_stages WHERE title LIKE "COM_WORKFLOW_BASIC_STAGE" ;'''
 BasicStageIdTarget = conTarget.execute(text(sqlTargetBasicStageId)).scalar()
 
 # GET ARTICLES TYPE ID OF THE TARGET WEBSITE
-sqlTargetArticlesTypeId = '''SELECT type_id FROM ''' + prefixTableTarget + '''content_types WHERE type_alias LIKE "com_content.article" AND type_title LIKE "Article" ;'''
+sqlTargetArticlesTypeId = '''SELECT MIN(type_id) AS type_id_content FROM ''' + prefixTableTarget + '''content_types WHERE type_alias LIKE "com_content.article" AND type_title LIKE "Article" ;'''
 ArticlesTypeIdTarget = conTarget.execute(text(sqlTargetArticlesTypeId)).scalar()
+
+# GET CONTENT ASSET ID OF THE TARGET WEBSITE
+sqlTargetContentAssetId = '''SELECT MIN(id) AS id_content FROM ''' + prefixTableTarget + '''assets WHERE name LIKE "com_content" ;'''
+ContentAssetIdTarget = conTarget.execute(text(sqlTargetContentAssetId)).scalar()
 
 # CLOSE CONNECTION
 conTarget.close()
@@ -99,6 +103,7 @@ if superIdTarget:
     print(colored('Target super-user id: ' + str(superIdTarget) + ' (superIdTarget)', 'green'))
     print(colored('Target workflow basic stage id: ' + str(BasicStageIdTarget) + ' (BasicStageIdTarget)', 'green'))
     print(colored('Target articles type id: ' + str(ArticlesTypeIdTarget) + ' (ArticlesTypeIdTarget)', 'green'))
+    print(colored('Target content asset id: ' + str(ContentAssetIdTarget) + ' (ContentAssetIdTarget)', 'green'))
 else:
     print(colored('Warning : we can not get the target super-user id!', 'yellow'))
 
