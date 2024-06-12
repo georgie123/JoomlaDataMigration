@@ -178,16 +178,32 @@ for t in contentsTables:
 
                 # UPDATE PUBLISH/DOWN FIELDS IN #_CONTENT AND "_TAGS
                 if t == 'content' or t == 'tags':
-                    my_session_content = sessionmaker(bind=engineTarget)
-                    mySessionContent = my_session_content()
-                    mySessionContent.begin()
+                    my_session_content_publish = sessionmaker(bind=engineTarget)
+                    mySessionContentPublish = my_session_content_publish()
+                    mySessionContentPublish.begin()
 
-                    mySessionContent.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_up = NULL WHERE publish_up LIKE "0000-00-00 00:00:00" ;'''))
-                    mySessionContent.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_down = NULL WHERE publish_down LIKE "0000-00-00 00:00:00" ;'''))
+                    mySessionContentPublish.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_up = NULL WHERE publish_up LIKE "0000-00-00 00:00:00" ;'''))
+                    mySessionContentPublish.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_down = NULL WHERE publish_down LIKE "0000-00-00 00:00:00" ;'''))
                     print(colored('The publish_up/down fields in target table #_' + t + ' has been fixed.', 'green'))
 
-                    mySessionContent.commit()
-                    mySessionContent.close()
+                    mySessionContentPublish.commit()
+                    mySessionContentPublish.close()
+
+                else:
+                    pass
+
+                # UPDATE CHECKED FIELDS IN #_CONTENT, #_CATEGORIES AND "_TAGS
+                if t == 'content' or t == 'categories' or t == 'tags':
+                    my_session_content_checked = sessionmaker(bind=engineTarget)
+                    mySessionContentChecked = my_session_content_checked()
+                    mySessionContentChecked.begin()
+
+                    mySessionContentChecked.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET checked_out = NULL ;'''))
+                    mySessionContentChecked.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET checked_out_time = NULL ;'''))
+                    print(colored('The checked fields in target table #_' + t + ' has been fixed.', 'green'))
+
+                    mySessionContentChecked.commit()
+                    mySessionContentChecked.close()
 
                 else:
                     pass
