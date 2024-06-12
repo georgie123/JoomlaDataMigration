@@ -206,7 +206,7 @@ for t in contentsTables:
         pass
 
 
-################ INSERTS IN #_WORKFLOW_ASSOCIATIONS FOR ALL ARTICLES
+################ TARGET INSERTS IN #_WORKFLOW_ASSOCIATIONS FOR ALL ARTICLES
 print(colored('\nTable #_workflow_associations', 'blue'))
 
 my_session_workflow_associations = sessionmaker(bind=engineTarget)
@@ -224,7 +224,21 @@ sessionWorkflowAssociations.close()
 print(colored(str(len(listMigratedArticles)) + ' insert(s) in target table #_workflow_associations.', 'green'))
 print('Using: listMigratedArticles')
 
-################ FIELD ASSET_ID IN TABLE #_CONTENT
+
+################ TARGET FIELD RULES IN TABLE #_ASSETS
+print(colored('\nField rules in table #_assets (for content)', 'blue'))
+my_session_assets_content_rules = sessionmaker(bind=engineTarget)
+sessionAssetsContentRules = my_session_assets_content_rules()
+sessionAssetsContentRules.begin()
+
+sessionAssetsContentRules.execute(text('''UPDATE ''' + prefixTableTarget + '''assets SET rules = \'''' + escape_value(ContentsRulesJsonSource) + '''\' WHERE name = "com_content" ;'''))
+print(colored('The rules field in target table #_assets has been fixed.', 'green'))
+
+sessionAssetsContentRules.commit()
+sessionAssetsContentRules.close()
+
+
+################ TARGET FIELD ASSET_ID IN TABLE #_CONTENT
 print(colored('\nField asset_id in table #_content', 'blue'))
 my_session_content_assets = sessionmaker(bind=engineTarget)
 sessionContentAssets = my_session_content_assets()
@@ -237,7 +251,7 @@ sessionContentAssets.commit()
 sessionContentAssets.close()
 
 
-################ FIELD ASSET_ID IN TABLE #_CATEGORIES
+################ TARGET FIELD ASSET_ID IN TABLE #_CATEGORIES
 print(colored('\nField asset_id in table #_categories', 'blue'))
 my_session_categories_assets = sessionmaker(bind=engineTarget)
 sessionCategoriesAssets = my_session_categories_assets()
@@ -250,7 +264,7 @@ sessionCategoriesAssets.commit()
 sessionCategoriesAssets.close()
 
 
-################ FIELD ASSET_ID IN TABLE #_UCM_CONTENT
+################ TARGET FIELD ASSET_ID IN TABLE #_UCM_CONTENT
 print(colored('\nField asset_id in table #_ucm_content', 'blue'))
 my_session_ucm_content_assets = sessionmaker(bind=engineTarget)
 sessionUcmContentAssets = my_session_ucm_content_assets()
@@ -263,7 +277,7 @@ sessionUcmContentAssets.commit()
 sessionUcmContentAssets.close()
 
 
-################ FIELD PARENT_ID IN TABLE #_ASSETS FOR ARTICLES
+################ TARGET FIELD PARENT_ID IN TABLE #_ASSETS FOR ARTICLES
 print(colored('\nField parent_id in table #_assets for articles', 'blue'))
 sqlTargetAssetsParentIdFix = '''SELECT CONCAT("UPDATE ''' + prefixTableTarget + '''assets SET parent_id = ", ''' + prefixTableTarget + '''assets_2.id, " WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;") AS my_query FROM ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_1 LEFT JOIN ''' + prefixTableTarget + '''content ON ''' + prefixTableTarget + '''assets_1.name = CONCAT("com_content.article.", ''' + prefixTableTarget + '''content.id) LEFT JOIN ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_2 ON ''' + prefixTableTarget + '''content.catid = REPLACE(''' + prefixTableTarget + '''assets_2.name, "com_content.category.", "") WHERE ''' + prefixTableTarget + '''assets_1.name LIKE "com_content.article.%%" ;'''
 dfTargetAssetsParentIdFix = pd.read_sql_query(sqlTargetAssetsParentIdFix, engineTarget)
@@ -286,7 +300,7 @@ sessionTargetAssetsParentIdFix.close()
 print(colored('The field parent_id has been fixed in table #_assets for articles.', 'green'))
 
 
-################ FIELD PARENT_ID IN TABLE #_ASSETS FOR CATEGORIES
+################ TARGET FIELD PARENT_ID IN TABLE #_ASSETS FOR CATEGORIES
 print(colored('\nField parent_id in table #_assets for categories', 'blue'))
 sqlTargetAssetsCatParentIdFix = '''SELECT IF(''' + prefixTableTarget + '''assets_2.id IS NULL, CONCAT("UPDATE ''' + prefixTableTarget + '''assets SET parent_id = ''' + str(ContentAssetIdTarget) + ''' WHERE id = ",''' + prefixTableTarget + '''assets_1.id, " ;"), CONCAT("UPDATE ''' + prefixTableTarget + '''assets SET parent_id = ", ''' + prefixTableTarget + '''assets_2.id, " WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;")) AS my_query FROM ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_1 LEFT JOIN ''' + prefixTableTarget + '''categories ON ''' + prefixTableTarget + '''assets_1.name = CONCAT("com_content.category.", ''' + prefixTableTarget + '''categories.id) LEFT JOIN ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_2 ON ''' + prefixTableTarget + '''categories.parent_id = REPLACE(''' + prefixTableTarget + '''assets_2.name, "com_content.category.", "") WHERE ''' + prefixTableTarget + '''assets_1.name LIKE "com_content.category.%%" ;'''
 dfTargetAssetsCatParentIdFix = pd.read_sql_query(sqlTargetAssetsCatParentIdFix, engineTarget)
@@ -309,7 +323,7 @@ sessionTargetAssetsCatParentIdFix.close()
 print(colored('The field parent_id has been fixed in table #_assets for categories.', 'green'))
 
 
-################ FIELD TYPE_ID IN TABLE #_CONTENTITEM_TAG_MAP
+################ TARGET FIELD TYPE_ID IN TABLE #_CONTENTITEM_TAG_MAP
 print(colored('\nField type_id in table #_contentitem_tag_map', 'blue'))
 my_session_contentitem_tag_map_type = sessionmaker(bind=engineTarget)
 sessionContentItemTagMapType = my_session_contentitem_tag_map_type()
@@ -322,7 +336,7 @@ sessionContentItemTagMapType.commit()
 sessionContentItemTagMapType.close()
 
 
-################ FIELD TYPE_ID IN TABLE #_UCM_CONTENT
+################ TARGET FIELD TYPE_ID IN TABLE #_UCM_CONTENT
 print(colored('\nField type_id in table #_ucm_content', 'blue'))
 my_session_ucm_content_type = sessionmaker(bind=engineTarget)
 sessionUcmContentType = my_session_ucm_content_type()
@@ -335,7 +349,7 @@ sessionUcmContentType.commit()
 sessionUcmContentType.close()
 
 
-################ UPDATE TEXT FIELDS FOR #_CONTENT
+################ UPDATE TARGET TEXT FIELDS FOR #_CONTENT
 print(colored('\nFields text in table #_content', 'blue'))
 my_session_text_content = sessionmaker(bind=engineTarget)
 sessionTextContent = my_session_text_content()
@@ -348,8 +362,7 @@ print(colored('Links to the website has been fixed in the text fields of target 
 sessionTextContent.commit()
 sessionTextContent.close()
 
-
-################ FIX URL REWRITE
+# FIX URL REWRITE
 sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, "/', id, '-', alias, '", "/', alias, '") ;') AS query1, CONCAT('UPDATE ''' + prefixTableTarget + '''content SET `fulltext` = REPLACE(`fulltext`, "/', id, '-', alias, '", "/', alias, '") ;') AS query2 FROM ''' + prefixTableTarget + '''content ;'''
 dfTargetTextUrlFix = pd.read_sql_query(sqlTargetTextUrlFix, engineTarget)
 
@@ -376,7 +389,7 @@ sessionUrlRewriteContent.close()
 print(colored('The URL rewrite links has been fixed in the text fields of target table #_content (removing id from URL articles).', 'green'))
 
 
-################ UPDATE TEXT FIELDS FOR #_UCM_CONTENT
+################ UPDATE TARGET TEXT FIELDS FOR #_UCM_CONTENT
 print(colored('\nFields text in table #_ucm_content', 'blue'))
 my_session_text_ucm = sessionmaker(bind=engineTarget)
 sessionTextUcm = my_session_text_ucm()
@@ -389,7 +402,7 @@ print(colored('Links to the website has been fixed in the field core_body of tar
 sessionTextUcm.commit()
 sessionTextUcm.close()
 
-################ FIX URL REWRITE
+# FIX URL REWRITE
 sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, "/', id, '-', alias, '", "/', alias, '") ;') AS query1 FROM ''' + prefixTableTarget + '''content ;'''
 dfTargetTextUrlFix = pd.read_sql_query(sqlTargetTextUrlFix, engineTarget)
 

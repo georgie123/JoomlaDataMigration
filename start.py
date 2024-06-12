@@ -62,8 +62,32 @@ def isTableExistInSource(myTable):
     return myAnswer
 
 
-############### GET SPECIFIC TARGET IDS
-print(colored('\nGET SPECIFIC TARGET IDS', 'blue'))
+############### GET SPECIFIC SOURCE VALUES
+print(colored('\nGET SPECIFIC SOURCE VALUES', 'blue'))
+conSource = engineSource.connect()
+
+# GET SUPER-USER OF THE SOURCE WEBSITE
+sqlSourceSuperId = '''SELECT MIN(user_id) AS super_id FROM ''' + prefixTableSource + '''user_usergroup_map WHERE group_id = 8 ;'''
+superIdSource = conSource.execute(text(sqlSourceSuperId)).scalar()
+
+# GET CONTENTS RULES JSON OF THE SOURCE WEBSITE
+sqlContentsRulesJsonSource = '''SELECT rules FROM ''' + prefixTableSource + '''assets where name = "com_content" ORDER BY id ASC LIMIT 0,1 ;'''
+ContentsRulesJsonSource = conSource.execute(text(sqlContentsRulesJsonSource)).scalar()
+
+# CLOSE CONNECTION
+conSource.close()
+engineSource.dispose()
+
+# DISPLAY SPECIFIC SOURCE VALUES
+if superIdSource:
+    print(colored('Source super-user id: ' + str(superIdSource) + ' (superIdSource)', 'green'))
+    print(colored('Source contents rules json: ' + str(ContentsRulesJsonSource) + ' (ContentsRulesJsonSource)', 'green'))
+else:
+    print(colored('Warning : we can not get the source super-user id!', 'yellow'))
+
+
+############### GET SPECIFIC TARGET VALUES
+print(colored('\nGET SPECIFIC TARGET VALUES', 'blue'))
 conTarget = engineTarget.connect()
 
 # GET SUPER-USER OF THE TARGET WEBSITE
@@ -86,7 +110,7 @@ ContentAssetIdTarget = conTarget.execute(text(sqlTargetContentAssetId)).scalar()
 conTarget.close()
 engineTarget.dispose()
 
-# DISPLAY SPECIFIC TARGET IDS
+# DISPLAY SPECIFIC TARGET VALUES
 if BasicStageIdTarget:
     pass
 else:
