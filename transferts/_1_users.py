@@ -47,7 +47,7 @@ for t in usersTables:
 
             # IF BOTH CONDITIONS ARE SATISFIED
             # GET FIELDS OF TARGET TABLE
-            sqlTargetFields = '''SELECT column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + t + '''\' ;'''
+            sqlTargetFields = '''SELECT column_name AS column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + t + '''\' ;'''
             dfTargetFields = pd.read_sql_query(sqlTargetFields, engineTarget)
             listTargetFields = dfTargetFields['column_name'].tolist()
 
@@ -57,7 +57,7 @@ for t in usersTables:
             # print(listTargetFields)
 
             # GET FIELDS OF SOURCE TABLE
-            sqlSourceFields = '''SELECT column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + t + '''\' ;'''
+            sqlSourceFields = '''SELECT column_name AS column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + t + '''\' ;'''
             dfSourceFields = pd.read_sql_query(sqlSourceFields, engineSource)
             listSourceFields = dfSourceFields['column_name'].tolist()
 

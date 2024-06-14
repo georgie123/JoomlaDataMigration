@@ -25,7 +25,7 @@ file = open(accessFile, 'r')
 lines = file.readlines()
 
 for num, x in enumerate(lines):
-    if x == '>>> TARGET AlwaysData hg2\n':
+    if x == '>>> TARGET Local Samsung Joomla\n':
         hosterTarget = x.replace('\n', '')
         hostTarget = lines[num+1].replace('host:', '').replace('\n', '')
         portDbTarget = int(lines[num+2].replace('port:', '').replace('\n', ''))
