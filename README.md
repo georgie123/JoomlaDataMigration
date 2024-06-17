@@ -16,7 +16,7 @@ Set up a small text file in your computer to store the access of your two Joomla
 <br>In my code, this file is named <b><i>gjcY8d4q6mvC2WXy.ztxt</i></b>, at the root of my PyCharm directory (but put it where you want).
 <br>Into this file, set up the two database access, the tables prefix, but also the domains (without http/https, and even if it is <b><i>localhost</i></b>).
 
-<pre>
+<pre><h4 align="center">Access file example</h4>
 >>> SOURCE My original Joomla website
 host:xxxxxxxxxxxx
 port:330X
