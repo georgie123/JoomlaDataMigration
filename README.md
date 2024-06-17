@@ -36,8 +36,8 @@ Tables prefix:xx_
 Domain:test.mydomain.fr
 </pre>
 
-<br>Then the code will search your two access from the first line describing an access.
 <br>Call your access file from the script named <b><i>_params.py</i></b>, changing his path but also the two first lines describing the access.
+<br>The code will search your two access from the first line describing an access.
 
 <br>Take your time to set up the <b><i>_params.py</i></b>, because it manages the source and the target websites.
 <br>The <b><i>source</i></b> is your original website, maybe in production 😯
