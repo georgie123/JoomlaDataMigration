@@ -18,10 +18,11 @@ Set up a small text file in your computer to store the access of your two Joomla
 <br>Then the code will search your two access from the first line describing an access.
 <br>Call your access file from the script named "_params.py", changing his path but also the two first lines describing the access.
 
-<br>In my "_params.py" script, you will see two code blocks managing my PyCharm directories on my two computers. Of course you can simplified this script to only find your access file, no more.
+<br>In my "_params.py" script, you will see specific blocks managing my PyCharm directories on my two computers 😁
+<br>Of course, you can simplify this script to only find and read your access file, no more.
 
 <br>OK, then, just run the script named "start.py"!
-<br>This script will run all the scripts placed in the directory named "transferts".
+<br>This script will run all the scripts placed in the directory named "transferts". So you can add your own scripts to manage other specific tables if needy.
 
 ## Validated
 <ul>
