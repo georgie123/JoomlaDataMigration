@@ -15,6 +15,27 @@ From my experience, it is very usefull for try a new template, a new extension, 
 Set up a small text file in your computer to store the access of your two Joomla databases.
 <br>In my code, this file is named <b><i>gjcY8d4q6mvC2WXy.ztxt</i></b>, at the root of my PyCharm directory (but put it where you want).
 <br>Into this file, set up the two database access, the tables prefix, but also the domains (without http/https, and even if it is <b><i>localhost</i></b>).
+
+<pre>
+>>> SOURCE My original Joomla website
+host:xxxxxxxxxxxx
+port:330X
+DB user:xxxxxxxxxxxx
+DB password:xxxxxxxxxxx
+DB name:xxxxxxxxxxx
+Tables prefix:xx_
+Domain:mydomain.fr
+
+>>> TARGET My brand new Joomla website
+host:xxxxxxxxxxxx
+port:330X
+DB user:xxxxxxxxxxxx
+DB password:xxxxxxxxxxxx
+DB name:xxxxxxxxxxxx
+Tables prefix:xx_
+Domain:test.mydomain.fr
+</pre>
+
 <br>Then the code will search your two access from the first line describing an access.
 <br>Call your access file from the script named <b><i>_params.py</i></b>, changing his path but also the two first lines describing the access.
 
