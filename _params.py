@@ -21,11 +21,11 @@ if os.path.isdir(pycharmDirectoryGeorgesDesktopD):
     accessFile = pycharmDirectory + 'gjcY8d4q6mvC2WXy.ztxt'
 
 ############### FIND THE ACCESS DATA
-file = open(accessFile, 'r')
+file = open(accessFile, 'r', encoding='utf8')
 lines = file.readlines()
 
 for num, x in enumerate(lines):
-    if x == '>>> TARGET Local Samsung Joomla\n':
+    if x == '>>> TARGET Local Samsung MasterGéomatique\n':
         hosterTarget = x.replace('\n', '')
         hostTarget = lines[num+1].replace('host:', '').replace('\n', '')
         portDbTarget = int(lines[num+2].replace('port:', '').replace('\n', ''))
@@ -44,7 +44,7 @@ for num, x in enumerate(lines):
         print('Prefix table target:\t' + prefixTableTarget)
         print('Domain target:\t' + domainTarget)
 
-    if x == '>>> SOURCE AlwaysData Courant\n':
+    if x == '>>> SOURCE Infomaniak MasterGéomatique\n':
         hosterSource = x.replace('\n', '')
         hostSource = lines[num + 1].replace('host:', '').replace('\n', '')
         portDbSource = int(lines[num + 2].replace('port:', '').replace('\n', ''))
