@@ -26,7 +26,7 @@ DB name:xxxxxxxxxxx
 Tables prefix:xx_
 Domain:mydomain.fr
 
->>> TARGET My brand new Joomla website
+>>> TARGET My brand new Joomla website online
 host:xxxxxxxxxxxx
 port:330X
 DB user:xxxxxxxxxxxx
@@ -34,6 +34,15 @@ DB password:xxxxxxxxxxxx
 DB name:xxxxxxxxxxxx
 Tables prefix:xx_
 Domain:test.mydomain.fr
+
+>>> TARGET My brand new Joomla website local
+host:xxxxxxxxxxxx
+port:330X
+DB user:xxxxxxxxxxxx
+DB password:xxxxxxxxxxxx
+DB name:xxxxxxxxxxxx
+Tables prefix:xx_
+Domain:localhost
 </pre>
 
 <br>Call your access file from the script named <b><i>_params.py</i></b>, changing his path but also the two first lines describing the access.
@@ -41,7 +50,7 @@ Domain:test.mydomain.fr
 
 <br>Take your time to set up the <b><i>_params.py</i></b>, because it manages the source and the target websites.
 <br>The <b><i>source</i></b> is your original website, maybe in production 😯
-<br>The <b><i>target</i></b> website is your brandnew website, <b>consider it as a sandbox during the first migration</b> (then you can work on it, but please consider it as a sandbox for the first time you run the process).
+<br>The <b><i>target</i></b> website is your brandnew website, <b>consider it as a sandbox during the first migration</b> (then you can work on it, but please consider it as a sandbox during the first time you run the process).
 
 <br>In my <b><i>_params.py</i></b> script, you will see specific blocks managing my PyCharm directories on my two computers 😁
 <br>Of course, you can simplify this script to only find and read your access file, no more.
