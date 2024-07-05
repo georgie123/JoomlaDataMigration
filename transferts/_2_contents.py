@@ -3,9 +3,9 @@ from sqlalchemy.orm import sessionmaker
 from tabulate import tabulate as tab
 
 contentsTables = [
-    'content', 'categories', 'contentitem_tag_map', 'tags',
+    'categories', 'contentitem_tag_map', 'tags',
     'content_rating', 'content_frontpage',
-    'ucm_content', 'assets',
+    'ucm_content', 'assets', 'content',
     'workflow_associations', 'history'
 ]
 
