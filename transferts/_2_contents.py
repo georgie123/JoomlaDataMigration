@@ -299,6 +299,14 @@ print(colored('\nField parent_id in table #_assets for articles', 'blue'))
 sqlTargetAssetsParentIdFix = '''SELECT CONCAT("UPDATE ''' + prefixTableTarget + '''assets SET parent_id = ", ''' + prefixTableTarget + '''assets_2.id, " WHERE id = ", ''' + prefixTableTarget + '''assets_1.id, " ;") AS my_query FROM ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_1 LEFT JOIN ''' + prefixTableTarget + '''content ON ''' + prefixTableTarget + '''assets_1.name = CONCAT("com_content.article.", ''' + prefixTableTarget + '''content.id) LEFT JOIN ''' + prefixTableTarget + '''assets AS ''' + prefixTableTarget + '''assets_2 ON ''' + prefixTableTarget + '''content.catid = REPLACE(''' + prefixTableTarget + '''assets_2.name, "com_content.category.", "") WHERE ''' + prefixTableTarget + '''assets_1.name LIKE "com_content.article.%%" ;'''
 dfTargetAssetsParentIdFix = pd.read_sql_query(sqlTargetAssetsParentIdFix, engineTarget)
 
+# EXCLUDE EMPTY RESULTS
+dfTargetAssetsParentIdFix = dfTargetAssetsParentIdFix[
+    (dfTargetAssetsParentIdFix['my_query'].notnull()) &
+    (dfTargetAssetsParentIdFix['my_query'].notna()) &
+    (dfTargetAssetsParentIdFix['my_query'] != '') &
+    (dfTargetAssetsParentIdFix['my_query'] != 'nan')
+]
+
 # print('\ndfTargetAssetsParentIdFix:')
 # print(tab(dfTargetAssetsParentIdFix.head(10), headers='keys', tablefmt='psql', showindex=False))
 # print(dfTargetAssetsParentIdFix.shape[0])
@@ -325,6 +333,14 @@ dfTargetAssetsCatParentIdFix = pd.read_sql_query(sqlTargetAssetsCatParentIdFix, 
 # print('\ndfTargetAssetsCatParentIdFix:')
 # print(tab(dfTargetAssetsCatParentIdFix.head(10), headers='keys', tablefmt='psql', showindex=False))
 # print(dfTargetAssetsCatParentIdFix.shape[0])
+
+# EXCLUDE EMPTY RESULTS
+dfTargetAssetsCatParentIdFix = dfTargetAssetsCatParentIdFix[
+    (dfTargetAssetsCatParentIdFix['my_query'].notnull()) &
+    (dfTargetAssetsCatParentIdFix['my_query'].notna()) &
+    (dfTargetAssetsCatParentIdFix['my_query'] != '') &
+    (dfTargetAssetsCatParentIdFix['my_query'] != 'nan')
+    ]
 
 my_session_target_assets_cat_parent_id_fix = sessionmaker(bind=engineTarget)
 sessionTargetAssetsCatParentIdFix = my_session_target_assets_cat_parent_id_fix()
