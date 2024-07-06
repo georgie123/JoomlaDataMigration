@@ -390,7 +390,7 @@ session.begin()
 
 sessionTextContent.execute(text('''UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, \'''' + domainSource + '''\', \'''' + domainTarget + ''''), `fulltext` = REPLACE(`fulltext`, \'''' + domainSource + '''', \'''' + domainTarget + '''\') ;'''))
 sessionTextContent.execute(text('''UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), introtext = REPLACE(introtext, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/'), `fulltext` = REPLACE(`fulltext`, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), `fulltext` = REPLACE(`fulltext`, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/') ;'''))
-print(colored('Links to the website has been fixed in the text fields of target table #_content (but not images).', 'green'))
+print(colored('Links to the website has been fixed in the text fields of target table #_content.', 'green'))
 
 sessionTextContent.commit()
 sessionTextContent.close()
@@ -430,7 +430,7 @@ sessionTextUcm.begin()
 
 sessionTextUcm.execute(text('''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, \'''' + domainSource + '''\', \'''' + domainTarget + '''') ;'''))
 sessionTextUcm.execute(text('''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), core_body = REPLACE(core_body, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/') ;'''))
-print(colored('Links to the website has been fixed in the field core_body of target table #_ucm_content (but not images).', 'green'))
+print(colored('Links to the website has been fixed in the field core_body of target table #_ucm_content.', 'green'))
 
 sessionTextUcm.commit()
 sessionTextUcm.close()

@@ -37,13 +37,13 @@ Tables prefix:xx_
 Domain:test.mydomain.fr
 
 >>> TARGET My brand new Joomla website local
-host:xxxxxxxxxxxx
+host:localhost
 port:330X
 DB user:xxxxxxxxxxxx
 DB password:xxxxxxxxxxxx
 DB name:xxxxxxxxxxxx
 Tables prefix:xx_
-Domain:localhost
+Domain:localhost/MyBrandNewJoomlaWebsite
 </pre>
 
 <br>Call your access file from the script named <b><i>_params.py</i></b>, changing his path but also the two first lines describing the access.
@@ -64,20 +64,34 @@ OK, then, just run the script named <b><i>start.py</i></b>!
 
 <br>This script will run all the scripts placed in the directory named <b><i>transferts</i></b>. So you can add your own scripts to manage other specific tables if needy.
 
-## URLs
-In <b><i>transferts/_2_contents.py</i></b>, I manage the links going to the website itself and the URL rewriting. Feel free to cancel this management if needy.
+## URLs and images
+In <b><i>transferts/_2_contents.py</i></b>, I manage images and links from/going to the website itself, and the URL rewriting (search "UPDATE TARGET TEXT FIELDS" or "FIX URL REWRITE"). 
+
+Feel free to cancel this management if needy.
+
+In addition, depending on the degree of customization of your site, the storage location of your images... it may be imperfect.
+It will then be up to you to add another transfer script to execute a correction SQL query of this type for example:
+
+<pre>
+UPDATE MyDb.#_content SET introtext = REPLACE(introtext, 'src="users/', 'src="http://localhost/MyBrandNewWebsite/users/') ;
+UPDATE MyDb.#_content SET `fulltext` = REPLACE(`fulltext`, 'src="users/', 'src="http://localhost/MyBrandNewWebsite/users/') ;
+</pre>
+
+## End
+At the end of the process, via the Joomla administration, Maintetance tab, empty all caches, update the database structure and unlock all elements.
 
 ## Validated
 <ul>
-<li>OK from J3.9.23 to J5.0.2!</li>
-<li>OK from J3.9.23 to a J5.1.1!</li>
+<li>OK from J3.9.23 to J5.0.2</li>
+<li>OK from J3.9.23 to a J5.1.1</li>
+<li>OK from J3.7.4 to a J4.2.8</li>
 </ul>
 
 ## What's next
 I plan to add an automatic listing of the paths of all the images and files used in the articles.
 <br>With a such list, we will be able to build some command lines to get/move them in another server.
 
-<br>And sorry for my english ... I am french, lol.
+And sorry for my english ... I am french, lol.
 
 <b><a href="https://hg-map.fr/">HG-map.fr</a></b>
 
