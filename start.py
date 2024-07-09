@@ -10,8 +10,8 @@ from _params import hostSource, portDbSource, userDbSource, nameDbSource, pwdDbS
 
 from sqlalchemy import create_engine, text
 
-engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget))
-engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource))
+engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget), pool_recycle=3600)
+engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource), pool_recycle=3600)
 
 
 ############### FUNCTION: ESCAPE SOME CHAR DURING SQL TRANSFERT
@@ -28,38 +28,38 @@ def escape_value(value):
 def isTableExistInTarget(myTable):
     sqlTableTargetExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + myTable + '''\' ;'''
     conTarget = engineTarget.connect()
-    myResult = conTarget.execute(text(sqlTableTargetExist)).scalar()
+    myResultTarget = conTarget.execute(text(sqlTableTargetExist)).scalar()
 
     # CLOSE CONNECTION
     conTarget.close()
     engineTarget.dispose()
 
     # MANAGE RESULT
-    if myResult == prefixTableTarget + myTable:
-        myAnswer = 'Yes'
+    if myResultTarget == prefixTableTarget + myTable:
+        myAnswerTarget = 'Yes'
     else:
-        myAnswer = 'No'
+        myAnswerTarget = 'No'
 
-    return myAnswer
+    return myAnswerTarget
 
 
 ############### FUNCTION: FIND IF A TABLE EXIST IN SOURCE
 def isTableExistInSource(myTable):
     sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
     conSource = engineSource.connect()
-    myResult = conSource.execute(text(sqlTableSourceExist)).scalar()
+    myResultSource = conSource.execute(text(sqlTableSourceExist)).scalar()
 
     # CLOSE CONNECTION
     conSource.close()
     engineSource.dispose()
 
     # MANAGE RESULT
-    if myResult == prefixTableSource + myTable:
-        myAnswer = 'Yes'
+    if myResultSource == prefixTableSource + myTable:
+        myAnswerSource = 'Yes'
     else:
-        myAnswer = 'No'
+        myAnswerSource = 'No'
 
-    return myAnswer
+    return myAnswerSource
 
 
 ############### GET SPECIFIC SOURCE VALUES
@@ -156,4 +156,3 @@ conTarget.close()
 engineTarget.dispose()
 
 engineSource.dispose()
-
