@@ -1,6 +1,7 @@
 
 from sqlalchemy.orm import sessionmaker
 from tabulate import tabulate as tab
+import pyautogui
 
 contentsTables = [
     'categories', 'contentitem_tag_map', 'tags',
@@ -221,6 +222,8 @@ for t in contentsTables:
     else:
         print(colored('The table does not exist in target DB.', 'yellow'))
         pass
+
+    pyautogui.sleep(1)
 
 
 ################ TARGET INSERTS IN #_WORKFLOW_ASSOCIATIONS FOR ALL ARTICLES
