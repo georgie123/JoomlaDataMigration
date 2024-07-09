@@ -1,7 +1,7 @@
 
 from sqlalchemy.orm import sessionmaker
 from tabulate import tabulate as tab
-import pyautogui
+import time
 
 usersTables = [
     'users', 'user_keys', 'user_notes', 'user_profiles',
@@ -125,4 +125,4 @@ for t in usersTables:
         print(colored('The table does not exist in target DB.', 'yellow'))
         pass
 
-    pyautogui.sleep(1)
+    time.sleep(1)
