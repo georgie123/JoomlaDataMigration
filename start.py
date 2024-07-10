@@ -45,21 +45,29 @@ def isTableExistInTarget(myTable):
 
 ############### FUNCTION: FIND IF A TABLE EXIST IN SOURCE
 def isTableExistInSource(myTable):
-    sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
-    conSource = engineSource.connect()
-    myResultSource = conSource.execute(text(sqlTableSourceExist)).scalar()
 
-    # CLOSE CONNECTION
-    conSource.close()
-    engineSource.dispose()
+    try:
+        sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
+        conSource = engineSource.connect()
 
-    # MANAGE RESULT
-    if myResultSource == prefixTableSource + myTable:
-        myAnswerSource = 'Yes'
-    else:
+        myResultSource = conSource.execute(text(sqlTableSourceExist)).scalar()
+
+        # CLOSE CONNECTION
+        conSource.close()
+        engineSource.dispose()
+
+        # MANAGE RESULT
+        if myResultSource == prefixTableSource + myTable:
+            myAnswerSource = 'Yes'
+        else:
+            myAnswerSource = 'No'
+
+        return myAnswerSource
+
+    except:
+        print(colored('Issue searching the source table ' + myTable + ', we considerer it does not exist.', 'red'))
         myAnswerSource = 'No'
-
-    return myAnswerSource
+        return myAnswerSource
 
 
 ############### GET SPECIFIC SOURCE VALUES
