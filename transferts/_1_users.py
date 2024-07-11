@@ -125,4 +125,4 @@ for t in usersTables:
         print(colored('The table does not exist in target DB.', 'yellow'))
         pass
 
-    time.sleep(1)
+    time.sleep(2)

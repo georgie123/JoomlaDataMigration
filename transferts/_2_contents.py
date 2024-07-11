@@ -223,7 +223,7 @@ for t in contentsTables:
         print(colored('The table does not exist in target DB.', 'yellow'))
         pass
 
-    time.sleep(1)
+    time.sleep(2)
 
 
 ################ TARGET INSERTS IN #_WORKFLOW_ASSOCIATIONS FOR ALL ARTICLES
