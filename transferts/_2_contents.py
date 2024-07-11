@@ -6,7 +6,7 @@ import time
 contentsTables = [
     'categories', 'contentitem_tag_map', 'tags',
     'content_rating', 'content_frontpage',
-    'ucm_content', 'assets', 'content',
+    'ucm_content', 'ucm_base', 'assets', 'content',
     'workflow_associations', 'history'
 ]
 
