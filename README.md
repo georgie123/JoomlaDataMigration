@@ -1,11 +1,11 @@
 
 <h1 align="center">Joomla Data Migration</h1>
 
-This is a Python process to transfert Joomla core data from a website to another.
+Here a Python process to transfert Joomla core data from a website to another website under development.
 
 ## Core Data
-When I say <b><i>Joomla core data</i></b>, I mean the users (with their access rights, messages, privacy contents ...) and the articles (with their rights, categories, tags ...).
-<br>Some other tables are related to this core data and will be managed during the migration.
+When I say <b><i>Joomla core data</i></b>, I mean the users (with their access rights, messages, privacy contents ...), the articles (with their rights, categories, tags ...) and your own tables existing <i>beside</i> Joomla (if you created some content with Fabrik for example, a Kunena forum, other things from scratch ...).
+<br>Some other Joomla tables, specific lines or specific values are related to this core data and will be managed during the migration.
 
 ## Why
 From my experience, it is very usefull for try a new template, a new extension, prepare the new version of your Joomla website, configure some specific backups, clean up a website ...
@@ -65,17 +65,13 @@ OK, then, just run the script named <b><i>start.py</i></b>!
 <br>This script will run all the scripts placed in the directory named <b><i>transferts</i></b>. So you can add your own scripts to manage other specific tables if needy.
 
 ## URLs and images
-In <b><i>transferts/_2_contents.py</i></b>, I manage images and links from/going to the website itself, and the URL rewriting (search "UPDATE TARGET TEXT FIELDS" or "FIX URL REWRITE"). 
-
+In <b><i>transferts/_3_images_and_links.py</i></b>, I manage images and links from/going to the website itself, URL rewrite (search "UPDATE TARGET TEXT FIELDS" or "FIX URL REWRITE"), and setting hard links for images. 
 Feel free to cancel this management if needy.
 
-In addition, depending on the degree of customization of your site, the storage location of your images... it may be imperfect.
-It will then be up to you to add another transfer script to execute a correction SQL query of this type for example:
-
-<pre>
-UPDATE MyDb.#_content SET introtext = REPLACE(introtext, 'src="users/', 'src="http://localhost/MyBrandNewWebsite/users/') ;
-UPDATE MyDb.#_content SET `fulltext` = REPLACE(`fulltext`, 'src="users/', 'src="http://localhost/MyBrandNewWebsite/users/') ;
-</pre>
+## Main principles
+<li>Identification/separation/management of core data VS structural data, in order to allow the continuous development of the destination site at the same time as the regular transfer of data from the original site.</li>
+<li>Optimization of data transfers between Joomla tables which, as we know, can evolve from one version to another of the CMS (more tables, fewer tables, more fields, fewer fields... ). Functions for checking the existence of tables and comparing the fields present will generate SQL queries dynamically, then execute them (and display some logs in the console). Another advantage of this method is that it is particularly scalable: adding the transfer of another table simply requires adding it to a list.</li>
+<li>Indépendance des scripts de transferts. Plusieurs scripts sont présents dans le répertoire transferts car la cohérence des données ne suit pas la même logique selon que l'on parle des données de contenu, des données d'utilisateurs, de la gestion des liens, des images, de données personnalisées... Ces logiques sont donc séparées en scripts distincts. Un script peut être ajouté ou supprimé sans gêner le reste du processus.</li>
 
 ## End
 At the end of the process, via the Joomla administration, Maintetance tab, empty all caches, update the database structure and unlock all elements.
@@ -85,6 +81,7 @@ At the end of the process, via the Joomla administration, Maintetance tab, empty
 <li>OK from J3.9.23 to J5.0.2</li>
 <li>OK from J3.9.23 to a J5.1.1</li>
 <li>OK from J3.7.4 to a J4.2.8</li>
+<li>...</li>
 </ul>
 
 ## What's next

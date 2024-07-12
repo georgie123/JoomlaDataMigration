@@ -66,6 +66,7 @@ def isTableExistInSource(myTable):
 
     except:
         print(colored('Issue searching the source table ' + myTable + ', we considerer it does not exist.', 'red'))
+        print(colored('Please check it at the end of the process.', 'red'))
         myAnswerSource = 'No'
         return myAnswerSource
 
