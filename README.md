@@ -90,5 +90,5 @@ I plan to add an automatic listing of the paths of all the images and files used
 
 And sorry for my english ... I am french, lol.
 
-<b><a href="https://hg-map.fr/">HG-map.fr</a></b>
+<b><a href="https://hg-map.fr/astuces/97">HG-map.fr</a></b>
 
