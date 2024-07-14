@@ -4,7 +4,7 @@ from tabulate import tabulate as tab
 import time
 
 kunenaTables = [
-    'kunena_aliases', 'kunena_announcement', 'kunena_attachments',
+    'kunena_aliases', 'kunena_announcement', 'kunena_attachments', 'kunena_messages',
     'kunena_categories', 'kunena_smileys', 'kunena_messages_text',
     'kunena_ranks', 'kunena_thankyou', 'kunena_topics', 'kunena_sessions',
     'kunena_user_categories', 'kunena_user_read', 'kunena_user_topics',
