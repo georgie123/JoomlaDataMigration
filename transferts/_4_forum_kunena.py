@@ -4,8 +4,8 @@ from tabulate import tabulate as tab
 import time
 
 kunenaTables = [
-    'kunena_aliases', 'kunena_announcement', 'kunena_attachments', 'kunena_messages',
-    'kunena_categories', 'kunena_smileys', 'kunena_messages_text',
+    'kunena_aliases', 'kunena_announcement', 'kunena_attachments', 'kunena_categories',
+    'kunena_messages', 'kunena_smileys', 'kunena_messages_text',
     'kunena_ranks', 'kunena_thankyou', 'kunena_topics', 'kunena_sessions',
     'kunena_user_categories', 'kunena_user_read', 'kunena_user_topics',
     'kunena_users', 'kunena_users_banned'
@@ -108,6 +108,8 @@ for t in kunenaTables:
 
                     session.execute(text(queryInsert.replace('fulltext', '`fulltext`')))
 
+                    time.sleep(1)
+
                 session.commit()
                 session.close()
 
@@ -125,5 +127,3 @@ for t in kunenaTables:
     else:
         print(colored('The table does not exist in target DB.', 'yellow'))
         pass
-
-    time.sleep(2)

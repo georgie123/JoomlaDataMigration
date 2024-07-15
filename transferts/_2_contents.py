@@ -4,9 +4,9 @@ from tabulate import tabulate as tab
 import time
 
 contentsTables = [
-    'categories', 'contentitem_tag_map', 'tags',
+    'categories', 'tags', 'contentitem_tag_map',
     'content_rating', 'content_frontpage',
-    'ucm_content', 'ucm_base', 'assets', 'content',
+    'ucm_base', 'assets', 'content', 'ucm_content',
     'workflow_associations', 'history'
 ]
 
@@ -24,22 +24,27 @@ for t in contentsTables:
     if t == 'assets':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE name LIKE "com_content.article.%" OR name LIKE "com_content.category.%" OR name LIKE "#__ucm_content.%" ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
+        time.sleep(1)
 
     elif t == 'workflow_associations':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE extension LIKE "com_content.article" ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
+        time.sleep(1)
 
     elif t == 'tags':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE id > 1 ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
+        time.sleep(1)
 
     elif t == 'categories':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE extension LIKE "com_content" ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
+        time.sleep(1)
 
     else:
         SessionCleanTarget.execute(text('''TRUNCATE ''' + prefixTableTarget + t + ''' ;'''))
         print(colored('The target table #_' + t + ' has been emptied.', 'green'))
+        time.sleep(1)
 
 SessionCleanTarget.commit()
 SessionCleanTarget.close()
@@ -50,180 +55,180 @@ print('\nImporting...')
 
 for t in contentsTables:
 
-    # TO NOT TRANSFERT TABLE #_WORKFLOW_ASSOCIATION
-    if t == 'workflow_associations':
-        continue
-
-    print(colored('\nTable #_' + t, 'blue'))
-
-    if isTableExistInTarget(t) == 'Yes':
-        print('The table exists in target DB.')
-
-        if isTableExistInSource(t) == 'Yes':
-            print('The table exists in source DB.')
-
-            # IF BOTH CONDITIONS ARE SATISFIED
-            # GET FIELDS OF TARGET TABLE
-            sqlTargetFields = '''SELECT column_name AS column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + t + '''\' ;'''
-            dfTargetFields = pd.read_sql_query(sqlTargetFields, engineTarget)
-            listTargetFields = dfTargetFields['column_name'].tolist()
-
-            # print('\nFields of target table:')
-            # print(tab(dfTargetFields.head(10), headers='keys', tablefmt='psql', showindex=False))
-            # print(dfTargetFields.shape[0])
-            # print(listTargetFields)
-
-            # GET FIELDS OF SOURCE TABLE
-            sqlSourceFields = '''SELECT column_name AS column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + t + '''\' ;'''
-            dfSourceFields = pd.read_sql_query(sqlSourceFields, engineSource)
-            listSourceFields = dfSourceFields['column_name'].tolist()
-
-            # print('\nFields of source table:')
-            # print(tab(dfSourceFields.head(10), headers='keys', tablefmt='psql', showindex=False))
-            # print(dfSourceFields.shape[0])
-            # print(listSourceFields)
-
-            # COMPARE FIELDS BETWEEN SOURCE AND TARGET
-            CommonsFieldsList = sorted(list(set(listTargetFields) & set(listSourceFields)))
-            missingTargetFieldsList = sorted(list(set(listTargetFields) - set(listSourceFields)))
-            missingSourceFieldsList = sorted(list(set(listSourceFields) - set(listTargetFields)))
-
-            if len(CommonsFieldsList) == len(listTargetFields) and len(CommonsFieldsList) == len(listSourceFields):
-                print(colored('The tables #_' + t + ' have the same fields.', 'green'))
-            else:
-                print(colored('Warning, the tables #_' + t + ' do not have the same fields:', 'yellow'))
-                # print('Target fields #_' + t + ' (' + str(len(listTargetFields)) + '):', listTargetFields)
-                # print('Source fields #_' + t + ' (' + str(len(listSourceFields)) + '):', listSourceFields)
-                # print('Commons fields (' + str(len(CommonsFieldsList)) + '):', CommonsFieldsList)
-                print('Missing fields in target (' + str(len(missingTargetFieldsList)) + '):', missingTargetFieldsList)
-                print('Missing fields in source (' + str(len(missingSourceFieldsList)) + '):', missingSourceFieldsList,
-                      '\n')
-
-            if len(CommonsFieldsList) > 0:
-                print('Tables #_' + t + ' working...')
-
-                # REMOVE ASSET_ID FIELD FOR #_CONTENT
-                if t == 'content':
-                    CommonsFieldsList.remove('asset_id')
-                    print('Field asset_id removed (will be fill later).')
-
-                # REMOVE ASSET_ID FIELD FOR #_CATEGORIES
-                if t == 'categories':
-                    CommonsFieldsList.remove('asset_id')
-                    print('Field asset_id removed (will be fill later).')
-
-                # REMOVE ASSET_ID FIELD FOR #_ASSETS
-                elif t == 'assets':
-                    CommonsFieldsList.remove('id')
-                    print('Field id removed (to use the target id without deletion).')
-
-                else:
-                    pass
-
-                # QUERY TO GET DATA FROM SOURCE
-                listFields = str(CommonsFieldsList).replace('[', '').replace(']', '').replace("'", '').replace('"', '').replace('fulltext', '`fulltext`')
-
-                # TABLE #_CATEGORIES
-                if t == 'categories':
-                    sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE extension LIKE "com_content" ;'''
-                    print('Using: WHERE extension LIKE "com_content" ;')
-
-                # TABLE #_ASSETS
-                elif t == 'assets':
-                    sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE name LIKE "com_content.article.%%" OR name LIKE "com_content.category.%%" OR name LIKE "#__ucm_content.%%" ;'''
-                    print('Using: WHERE name LIKE "com_content.article.%" OR name LIKE "com_content.category.%" OR name LIKE "#__ucm_content.%" ;')
-
-                # TABLE #_TAGS
-                elif t == 'tags':
-                    sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE id > 1 ;'''
-                    print('Using: WHERE id > 1')
-
-                # TABLE #_CONTENTITEM_TAG_MAP
-                elif t == 'contentitem_tag_map':
-                    sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE type_alias = "com_content.article" ;'''
-                    print('Using: WHERE type_alias = "com_content.article"')
-
-                # TABLE #_UCM_CONTENT
-                elif t == 'ucm_content':
-                    sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE core_type_alias = "com_content.article" ;'''
-                    print('Using: WHERE core_type_alias = "com_content.article"')
-
-                else:
-                    sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' ;'''
-
-                dfSource = pd.read_sql_query(sqlSourceContent, engineSource)
-
-                # LIST ID FROM #_CONTENT
-                if t == 'content':
-                    listMigratedArticles = dfSource['id'].drop_duplicates().dropna().sort_values(ascending=True).tolist()
-
-                # print('\ndfSource:')
-                # print(tab(dfSource.head(10), headers='keys', tablefmt='psql', showindex=False))
-                # print(dfSource.shape[0])
-
-                # SQL TO INSERT IN TARGET
-                my_session = sessionmaker(bind=engineTarget)
-                session = my_session()
-                session.begin()
-                for index, row in dfSource.iterrows():
-                    columns = ', '.join(row.index)
-                    values = ', '.join(f"'{escape_value(v)}'" for v in row.values)
-                    queryInsert = '''INSERT IGNORE INTO ''' + prefixTableTarget + t + f''' ({columns}) VALUES ({values}) ;'''
-                    # print(queryInsert)
-
-                    session.execute(text(queryInsert.replace('fulltext', '`fulltext`')))
-
-                session.commit()
-                session.close()
-
-                print(colored('OK, ' + str(dfSource.shape[0]) + ' insert(s) in the target table #_' + t + '.', 'green'))
-
-                # UPDATE PUBLISH/DOWN FIELDS IN #_CONTENT AND "_TAGS
-                if t == 'content' or t == 'tags':
-                    my_session_content_publish = sessionmaker(bind=engineTarget)
-                    mySessionContentPublish = my_session_content_publish()
-                    mySessionContentPublish.begin()
-
-                    mySessionContentPublish.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_up = NULL WHERE publish_up LIKE "0000-00-00 00:00:00" ;'''))
-                    mySessionContentPublish.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_down = NULL WHERE publish_down LIKE "0000-00-00 00:00:00" ;'''))
-                    print(colored('The publish_up/down fields in target table #_' + t + ' has been fixed.', 'green'))
-
-                    mySessionContentPublish.commit()
-                    mySessionContentPublish.close()
-
-                else:
-                    pass
-
-                # UPDATE CHECKED FIELDS IN #_CONTENT, #_CATEGORIES AND "_TAGS
-                if t == 'content' or t == 'categories' or t == 'tags':
-                    my_session_content_checked = sessionmaker(bind=engineTarget)
-                    mySessionContentChecked = my_session_content_checked()
-                    mySessionContentChecked.begin()
-
-                    mySessionContentChecked.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET checked_out = NULL ;'''))
-                    mySessionContentChecked.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET checked_out_time = NULL ;'''))
-                    print(colored('The checked fields in target table #_' + t + ' has been fixed.', 'green'))
-
-                    mySessionContentChecked.commit()
-                    mySessionContentChecked.close()
-
-                else:
-                    pass
-
-            else:
-                print(colored('\nTables #_' + t + ' do not have common fields!', 'red'))
-                sys.exit()
-
-
-        else:
-            print(colored('But the table does not exist in source DB.', 'yellow'))
-            pass
+    if t == 'workflow_associations' or t == 'history':
+        print(colored('\nTable #_' + t + ' not imported.', 'blue'))
 
     else:
-        print(colored('The table does not exist in target DB.', 'yellow'))
-        pass
 
-    time.sleep(2)
+        print(colored('\nTable #_' + t, 'blue'))
+
+        if isTableExistInTarget(t) == 'Yes':
+            print('The table exists in target DB.')
+
+            if isTableExistInSource(t) == 'Yes':
+                print('The table exists in source DB.')
+
+                # IF BOTH CONDITIONS ARE SATISFIED
+                # GET FIELDS OF TARGET TABLE
+                sqlTargetFields = '''SELECT column_name AS column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + t + '''\' ;'''
+                dfTargetFields = pd.read_sql_query(sqlTargetFields, engineTarget)
+                listTargetFields = dfTargetFields['column_name'].tolist()
+
+                # print('\nFields of target table:')
+                # print(tab(dfTargetFields.head(10), headers='keys', tablefmt='psql', showindex=False))
+                # print(dfTargetFields.shape[0])
+                # print(listTargetFields)
+
+                # GET FIELDS OF SOURCE TABLE
+                sqlSourceFields = '''SELECT column_name AS column_name FROM information_schema.COLUMNS WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + t + '''\' ;'''
+                dfSourceFields = pd.read_sql_query(sqlSourceFields, engineSource)
+                listSourceFields = dfSourceFields['column_name'].tolist()
+
+                # print('\nFields of source table:')
+                # print(tab(dfSourceFields.head(10), headers='keys', tablefmt='psql', showindex=False))
+                # print(dfSourceFields.shape[0])
+                # print(listSourceFields)
+
+                # COMPARE FIELDS BETWEEN SOURCE AND TARGET
+                CommonsFieldsList = sorted(list(set(listTargetFields) & set(listSourceFields)))
+                missingTargetFieldsList = sorted(list(set(listTargetFields) - set(listSourceFields)))
+                missingSourceFieldsList = sorted(list(set(listSourceFields) - set(listTargetFields)))
+
+                if len(CommonsFieldsList) == len(listTargetFields) and len(CommonsFieldsList) == len(listSourceFields):
+                    print(colored('The tables #_' + t + ' have the same fields.', 'green'))
+                else:
+                    print(colored('Warning, the tables #_' + t + ' do not have the same fields:', 'yellow'))
+                    # print('Target fields #_' + t + ' (' + str(len(listTargetFields)) + '):', listTargetFields)
+                    # print('Source fields #_' + t + ' (' + str(len(listSourceFields)) + '):', listSourceFields)
+                    # print('Commons fields (' + str(len(CommonsFieldsList)) + '):', CommonsFieldsList)
+                    print('Missing fields in target (' + str(len(missingTargetFieldsList)) + '):', missingTargetFieldsList)
+                    print('Missing fields in source (' + str(len(missingSourceFieldsList)) + '):', missingSourceFieldsList, '\n')
+
+                if len(CommonsFieldsList) > 0:
+                    print('Tables #_' + t + ' working...')
+
+                    # REMOVE ASSET_ID FIELD FOR #_CONTENT
+                    if t == 'content':
+                        CommonsFieldsList.remove('asset_id')
+                        print('Field asset_id removed (will be fill later).')
+
+                    # REMOVE ASSET_ID FIELD FOR #_CATEGORIES
+                    elif t == 'categories':
+                        CommonsFieldsList.remove('asset_id')
+                        print('Field asset_id removed (will be fill later).')
+
+                    # REMOVE ASSET_ID FIELD FOR #_ASSETS
+                    elif t == 'assets':
+                        CommonsFieldsList.remove('id')
+                        print('Field id removed (to use the target id without deletion).')
+
+                    else:
+                        pass
+
+                    # QUERY TO GET DATA FROM SOURCE
+                    listFields = str(CommonsFieldsList).replace('[', '').replace(']', '').replace("'", '').replace('"', '').replace('fulltext', '`fulltext`')
+
+                    # TABLE #_CATEGORIES
+                    if t == 'categories':
+                        sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE extension LIKE "com_content" ;'''
+                        print('Using: WHERE extension LIKE "com_content" ;')
+
+                    # TABLE #_ASSETS
+                    elif t == 'assets':
+                        sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE name LIKE "com_content.article.%%" OR name LIKE "com_content.category.%%" OR name LIKE "#__ucm_content.%%" ;'''
+                        print('Using: WHERE name LIKE "com_content.article.%" OR name LIKE "com_content.category.%" OR name LIKE "#__ucm_content.%" ;')
+
+                    # TABLE #_TAGS
+                    elif t == 'tags':
+                        sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE id > 1 ;'''
+                        print('Using: WHERE id > 1')
+
+                    # TABLE #_CONTENTITEM_TAG_MAP
+                    elif t == 'contentitem_tag_map':
+                        sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE type_alias = "com_content.article" ;'''
+                        print('Using: WHERE type_alias = "com_content.article"')
+
+                    # TABLE #_UCM_CONTENT
+                    elif t == 'ucm_content':
+                        sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' WHERE core_type_alias = "com_content.article" ;'''
+                        print('Using: WHERE core_type_alias = "com_content.article"')
+
+                    else:
+                        sqlSourceContent = '''SELECT ''' + listFields + ''' FROM ''' + prefixTableSource + t + ''' ;'''
+
+                    dfSource = pd.read_sql_query(sqlSourceContent, engineSource)
+
+                    # LIST ID FROM #_CONTENT
+                    if t == 'content':
+                        listMigratedArticles = dfSource['id'].drop_duplicates().dropna().sort_values(ascending=True).tolist()
+
+                    # print('\ndfSource:')
+                    # print(tab(dfSource.head(10), headers='keys', tablefmt='psql', showindex=False))
+                    # print(dfSource.shape[0])
+
+                    # SQL TO INSERT IN TARGET
+                    my_session = sessionmaker(bind=engineTarget)
+                    session = my_session()
+                    session.begin()
+                    for index, row in dfSource.iterrows():
+                        columns = ', '.join(row.index)
+                        values = ', '.join(f"'{escape_value(v)}'" for v in row.values)
+                        queryInsert = '''INSERT IGNORE INTO ''' + prefixTableTarget + t + f''' ({columns}) VALUES ({values}) ;'''
+                        # print(queryInsert)
+
+                        session.execute(text(queryInsert.replace('fulltext', '`fulltext`')))
+
+                    session.commit()
+                    session.close()
+
+                    print(colored('OK, ' + str(dfSource.shape[0]) + ' insert(s) in the target table #_' + t + '.', 'green'))
+
+                    # UPDATE PUBLISH/DOWN FIELDS IN #_CONTENT AND "_TAGS
+                    if t == 'content' or t == 'tags':
+                        my_session_content_publish = sessionmaker(bind=engineTarget)
+                        mySessionContentPublish = my_session_content_publish()
+                        mySessionContentPublish.begin()
+
+                        mySessionContentPublish.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_up = NULL WHERE publish_up LIKE "0000-00-00 00:00:00" ;'''))
+                        mySessionContentPublish.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET publish_down = NULL WHERE publish_down LIKE "0000-00-00 00:00:00" ;'''))
+                        print(colored('The publish_up/down fields in target table #_' + t + ' has been fixed.', 'green'))
+
+                        mySessionContentPublish.commit()
+                        mySessionContentPublish.close()
+
+                    else:
+                        pass
+
+                    # UPDATE CHECKED FIELDS IN #_CONTENT, #_CATEGORIES AND "_TAGS
+                    if t == 'content' or t == 'categories' or t == 'tags':
+                        my_session_content_checked = sessionmaker(bind=engineTarget)
+                        mySessionContentChecked = my_session_content_checked()
+                        mySessionContentChecked.begin()
+
+                        mySessionContentChecked.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET checked_out = NULL ;'''))
+                        mySessionContentChecked.execute(text('''UPDATE ''' + prefixTableTarget + t + ''' SET checked_out_time = NULL ;'''))
+                        print(colored('The checked fields in target table #_' + t + ' has been fixed.', 'green'))
+
+                        mySessionContentChecked.commit()
+                        mySessionContentChecked.close()
+
+                    else:
+                        pass
+
+                else:
+                    print(colored('\nTables #_' + t + ' do not have common fields!', 'red'))
+                    sys.exit()
+
+
+            else:
+                print(colored('But the table does not exist in source DB.', 'yellow'))
+                pass
+
+        else:
+            print(colored('The table does not exist in target DB.', 'yellow'))
+            pass
+
+        time.sleep(2)
 
 
 ################ TARGET INSERTS IN #_WORKFLOW_ASSOCIATIONS FOR ALL ARTICLES
@@ -383,81 +388,3 @@ print(colored('The type_id field in target table #_ucm_content has been fixed.',
 
 sessionUcmContentType.commit()
 sessionUcmContentType.close()
-
-
-################ UPDATE TARGET TEXT FIELDS FOR #_CONTENT
-print(colored('\nFields text in table #_content', 'blue'))
-my_session_text_content = sessionmaker(bind=engineTarget)
-sessionTextContent = my_session_text_content()
-session.begin()
-
-sessionTextContent.execute(text('''UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, \'''' + domainSource + '''\', \'''' + domainTarget + ''''), `fulltext` = REPLACE(`fulltext`, \'''' + domainSource + '''', \'''' + domainTarget + '''\') ;'''))
-sessionTextContent.execute(text('''UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), introtext = REPLACE(introtext, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/'), `fulltext` = REPLACE(`fulltext`, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), `fulltext` = REPLACE(`fulltext`, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/') ;'''))
-print(colored('Links to the website has been fixed in the text fields of target table #_content.', 'green'))
-
-sessionTextContent.commit()
-sessionTextContent.close()
-
-# FIX URL REWRITE
-sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, "/', id, '-', alias, '", "/', alias, '") ;') AS query1, CONCAT('UPDATE ''' + prefixTableTarget + '''content SET `fulltext` = REPLACE(`fulltext`, "/', id, '-', alias, '", "/', alias, '") ;') AS query2 FROM ''' + prefixTableTarget + '''content ;'''
-dfTargetTextUrlFix = pd.read_sql_query(sqlTargetTextUrlFix, engineTarget)
-
-# print('\ndfTargetTextUrlFix:')
-# print(tab(dfTargetTextUrlFix.head(10), headers='keys', tablefmt='psql', showindex=False))
-# print(dfTargetTextUrlFix.shape[0])
-
-my_session_urlrewrite_content = sessionmaker(bind=engineTarget)
-sessionUrlRewriteContent = my_session_urlrewrite_content()
-sessionUrlRewriteContent.begin()
-for index, row in dfTargetTextUrlFix.iterrows():
-
-    myQuery1 = row['query1']
-    myQuery2 = row['query2']
-
-    sessionUrlRewriteContent.execute(text(myQuery1))
-    sessionUrlRewriteContent.execute(text(myQuery2))
-
-    # print(myQuery1)
-    # print(myQuery2)
-
-sessionUrlRewriteContent.commit()
-sessionUrlRewriteContent.close()
-print(colored('The URL rewrite links has been fixed in the text fields of target table #_content (removing id from URL articles).', 'green'))
-
-
-################ UPDATE TARGET TEXT FIELDS FOR #_UCM_CONTENT
-print(colored('\nFields text in table #_ucm_content', 'blue'))
-my_session_text_ucm = sessionmaker(bind=engineTarget)
-sessionTextUcm = my_session_text_ucm()
-sessionTextUcm.begin()
-
-sessionTextUcm.execute(text('''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, \'''' + domainSource + '''\', \'''' + domainTarget + '''') ;'''))
-sessionTextUcm.execute(text('''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), core_body = REPLACE(core_body, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/') ;'''))
-print(colored('Links to the website has been fixed in the field core_body of target table #_ucm_content.', 'green'))
-
-sessionTextUcm.commit()
-sessionTextUcm.close()
-
-# FIX URL REWRITE
-sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, "/', id, '-', alias, '", "/', alias, '") ;') AS query1 FROM ''' + prefixTableTarget + '''content ;'''
-dfTargetTextUrlFix = pd.read_sql_query(sqlTargetTextUrlFix, engineTarget)
-
-# print('\ndfTargetTextUrlFix:')
-# print(tab(dfTargetTextUrlFix.head(10), headers='keys', tablefmt='psql', showindex=False))
-# print(dfTargetTextUrlFix.shape[0])
-
-my_session_urlrewrite_ucm_content = sessionmaker(bind=engineTarget)
-sessionUrlRewriteUcmContent = my_session_urlrewrite_ucm_content()
-sessionUrlRewriteUcmContent.begin()
-for index, row in dfTargetTextUrlFix.iterrows():
-
-    myQuery1 = row['query1']
-
-    sessionUrlRewriteUcmContent.execute(text(myQuery1))
-
-    # print(myQuery1)
-
-sessionUrlRewriteUcmContent.commit()
-sessionUrlRewriteUcmContent.close()
-
-print(colored('The URL rewrite links has been fixed in the text fields of target table #_ucm_content (removing id from URL articles).', 'green'))
