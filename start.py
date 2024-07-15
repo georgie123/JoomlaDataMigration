@@ -3,15 +3,17 @@ import os
 from termcolor import colored
 import sys
 import pandas as pd
+import time
 
 import _params
 from _params import hostTarget, portDbTarget, userDbTarget, nameDbTarget, pwdDbTarget, prefixTableTarget, domainTarget
 from _params import hostSource, portDbSource, userDbSource, nameDbSource, pwdDbSource, prefixTableSource, domainSource
 
 from sqlalchemy import create_engine, text
+from sqlalchemy.pool import QueuePool
 
-engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget), pool_recycle=3600)
-engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource), pool_recycle=3600)
+engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget), connect_args={'connect_timeout': 120, 'read_timeout': 120, 'write_timeout': 120}, poolclass=QueuePool, pool_recycle=3600)
+engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource), connect_args={'connect_timeout': 120, 'read_timeout': 120, 'write_timeout': 120}, poolclass=QueuePool, pool_recycle=3600)
 
 
 ############### FUNCTION: ESCAPE SOME CHAR DURING SQL TRANSFERT
@@ -26,13 +28,11 @@ def escape_value(value):
 
 ############### FUNCTION: FIND IF A TABLE EXIST IN TARGET
 def isTableExistInTarget(myTable):
-    sqlTableTargetExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + myTable + '''\' ;'''
-    conTarget = engineTarget.connect()
-    myResultTarget = conTarget.execute(text(sqlTableTargetExist)).scalar()
 
-    # CLOSE CONNECTION
-    conTarget.close()
-    engineTarget.dispose()
+    sqlTableTargetExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + myTable + '''\' ;'''
+
+    with engineTarget.connect() as conTarget:
+        myResultTarget = conTarget.execute(text(sqlTableTargetExist)).scalar()
 
     # MANAGE RESULT
     if myResultTarget == prefixTableTarget + myTable:
@@ -42,33 +42,25 @@ def isTableExistInTarget(myTable):
 
     return myAnswerTarget
 
+    time.sleep(1)
 
 ############### FUNCTION: FIND IF A TABLE EXIST IN SOURCE
 def isTableExistInSource(myTable):
 
-    try:
-        sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
-        conSource = engineSource.connect()
+    sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
 
+    with engineSource.connect() as conSource:
         myResultSource = conSource.execute(text(sqlTableSourceExist)).scalar()
 
-        # CLOSE CONNECTION
-        conSource.close()
-        engineSource.dispose()
-
-        # MANAGE RESULT
-        if myResultSource == prefixTableSource + myTable:
-            myAnswerSource = 'Yes'
-        else:
-            myAnswerSource = 'No'
-
-        return myAnswerSource
-
-    except:
-        print(colored('Issue searching the source table ' + myTable + ', we considerer it does not exist.', 'red'))
-        print(colored('Please check it at the end of the process.', 'red'))
+    # MANAGE RESULT
+    if myResultSource == prefixTableSource + myTable:
+        myAnswerSource = 'Yes'
+    else:
         myAnswerSource = 'No'
-        return myAnswerSource
+
+    return myAnswerSource
+
+    time.sleep(1)
 
 
 ############### GET SPECIFIC SOURCE VALUES

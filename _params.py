@@ -25,7 +25,7 @@ file = open(accessFile, 'r', encoding='utf8')
 lines = file.readlines()
 
 for num, x in enumerate(lines):
-    if x == '>>> TARGET Local Samsung MasterGéomatique\n':
+    if x == '>>> TARGET Infomaniak MasterGéomatique J4Binv\n':
         hosterTarget = x.replace('\n', '')
         hostTarget = lines[num+1].replace('host:', '').replace('\n', '')
         portDbTarget = int(lines[num+2].replace('port:', '').replace('\n', ''))
@@ -62,5 +62,3 @@ for num, x in enumerate(lines):
         print('Name DB source:\t\t\t' + nameDbSource)
         print('Prefix table source:\t' + prefixTableSource)
         print('Domain source:\t' + domainSource)
-
-
