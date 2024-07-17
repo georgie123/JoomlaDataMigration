@@ -30,7 +30,7 @@ for t in usersTables:
         pass
 
 SessionCleanTarget.commit()
-SessionCleanTarget.close()
+# SessionCleanTarget.close()
 
 
 ################ IMPORTING
@@ -113,7 +113,7 @@ for t in usersTables:
                         session.execute(text(queryInsert.replace('fulltext', '`fulltext`')))
 
                     session.commit()
-                    session.close()
+                    # session.close()
 
                     print(colored('OK, ' + str(dfSource.shape[0]) + ' insert(s) in the target table #_' + t + '.', 'green'))
 

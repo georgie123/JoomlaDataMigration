@@ -24,27 +24,22 @@ for t in contentsTables:
     if t == 'assets':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE name LIKE "com_content.article.%" OR name LIKE "com_content.category.%" OR name LIKE "#__ucm_content.%" ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
-        time.sleep(1)
 
     elif t == 'workflow_associations':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE extension LIKE "com_content.article" ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
-        time.sleep(1)
 
     elif t == 'tags':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE id > 1 ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
-        time.sleep(1)
 
     elif t == 'categories':
         SessionCleanTarget.execute(text('''DELETE FROM ''' + prefixTableTarget + t + ''' WHERE extension LIKE "com_content" ;'''))
         print(colored('The target table #_' + t + ' has been cleaned.', 'green'))
-        time.sleep(1)
 
     else:
         SessionCleanTarget.execute(text('''TRUNCATE ''' + prefixTableTarget + t + ''' ;'''))
         print(colored('The target table #_' + t + ' has been emptied.', 'green'))
-        time.sleep(1)
 
 SessionCleanTarget.commit()
 SessionCleanTarget.close()
@@ -102,7 +97,8 @@ for t in contentsTables:
                     # print('Source fields #_' + t + ' (' + str(len(listSourceFields)) + '):', listSourceFields)
                     # print('Commons fields (' + str(len(CommonsFieldsList)) + '):', CommonsFieldsList)
                     print('Missing fields in target (' + str(len(missingTargetFieldsList)) + '):', missingTargetFieldsList)
-                    print('Missing fields in source (' + str(len(missingSourceFieldsList)) + '):', missingSourceFieldsList, '\n')
+                    print('Missing fields in source (' + str(len(missingSourceFieldsList)) + '):', missingSourceFieldsList,
+                          '\n')
 
                 if len(CommonsFieldsList) > 0:
                     print('Tables #_' + t + ' working...')
@@ -113,7 +109,7 @@ for t in contentsTables:
                         print('Field asset_id removed (will be fill later).')
 
                     # REMOVE ASSET_ID FIELD FOR #_CATEGORIES
-                    elif t == 'categories':
+                    if t == 'categories':
                         CommonsFieldsList.remove('asset_id')
                         print('Field asset_id removed (will be fill later).')
 
