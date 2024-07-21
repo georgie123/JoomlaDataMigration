@@ -11,9 +11,20 @@ from _params import hostSource, portDbSource, userDbSource, nameDbSource, pwdDbS
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import QueuePool
+from sqlalchemy.exc import OperationalError
 
-engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget), connect_args={'connect_timeout': 120, 'read_timeout': 120, 'write_timeout': 120}, poolclass=QueuePool, pool_recycle=3600)
-engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource), connect_args={'connect_timeout': 120, 'read_timeout': 120, 'write_timeout': 120}, poolclass=QueuePool, pool_recycle=3600)
+# CLOSE EXISTING CONNECTIONS AND VARIABLES
+try:
+    engineTarget.dispose()
+    engineSource.dispose()
+    del listStepScripts
+except:
+    pass
+
+
+#  CONNECTIONS
+engineTarget = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbTarget, pwdDbTarget, hostTarget, portDbTarget, nameDbTarget), connect_args={'connect_timeout': 60, 'read_timeout': 60, 'write_timeout': 60}, poolclass=QueuePool, pool_recycle=3600)
+engineSource = create_engine('mysql+mysqldb://%s:%s@%s:%i/%s' % (userDbSource, pwdDbSource, hostSource, portDbSource, nameDbSource), connect_args={'connect_timeout': 60, 'read_timeout': 60, 'write_timeout': 60}, poolclass=QueuePool, pool_recycle=3600)
 
 
 ############### FUNCTION: ESCAPE SOME CHAR DURING SQL TRANSFERT
@@ -26,13 +37,73 @@ def escape_value(value):
     return value_str
 
 
+############### FUNCTION TO RUN AN UPDATE QUERY UNTIL IT WORKS (TO MANAGE INTERNET CONNECTION OR TRANSACTION ISSUES)
+def query_management_update(session, query, max_retries, retry_delay):
+    attempts = 0
+    while attempts < max_retries:
+        try:
+            session.execute(text(query))
+            session.commit()
+            print(colored('OK, update executed on the first try.', 'green'))
+            attempts = max_retries
+        except OperationalError as e:
+            attempts += 1
+            if attempts < max_retries:
+                print(colored(f'Connection issue, attempt {attempts}/{max_retries}. Retry in {retry_delay} seconds...', 'yellow'))
+                time.sleep(retry_delay)
+            else:
+                print(colored('All attempts did not work!', 'red'))
+                raise e
+
+
+############### FUNCTION TO RUN A SELECT QUERY UNTIL IT WORKS (TO MANAGE INTERNET CONNECTION OR TRANSACTION ISSUES)
+############### FUNCTION FOR TARGET
+def query_management_select_t(query, max_retries, retry_delay):
+    global myResultTarget
+    attempts = 0
+    while attempts < max_retries:
+        try:
+            with engineTarget.connect() as conTarget:
+                myResultTarget = conTarget.execute(text(query)).scalar()
+                print('Select executed on the first try.')
+                attempts = max_retries
+        except OperationalError as e:
+            attempts += 1
+            if attempts < max_retries:
+                print(colored(f'Connection issue, attempt {attempts}/{max_retries}. Retry in {retry_delay} seconds...', 'yellow'))
+                time.sleep(retry_delay)
+            else:
+                print(colored('All attempts did not work!', 'red'))
+                raise e
+
+
+############### FUNCTION TO RUN A SELECT QUERY UNTIL IT WORKS (TO MANAGE INTERNET CONNECTION OR TRANSACTION ISSUES)
+############### FUNCTION FOR SOURCE
+def query_management_select_s(query, max_retries, retry_delay):
+    global myResultSource
+    attempts = 0
+    while attempts < max_retries:
+        try:
+            with engineSource.connect() as conSource:
+                myResultSource = conSource.execute(text(query)).scalar()
+                print('Select executed on the first try.')
+                attempts = max_retries
+        except OperationalError as e:
+            attempts += 1
+            if attempts < max_retries:
+                print(colored(f'Connection issue, attempt {attempts}/{max_retries}. Retry in {retry_delay} seconds...', 'yellow'))
+                time.sleep(retry_delay)
+            else:
+                print(colored('All attempts did not work!', 'red'))
+                raise e
+
+
 ############### FUNCTION: FIND IF A TABLE EXIST IN TARGET
 def isTableExistInTarget(myTable):
 
     sqlTableTargetExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbTarget + '''\' AND TABLE_NAME = \'''' + prefixTableTarget + myTable + '''\' ;'''
 
-    with engineTarget.connect() as conTarget:
-        myResultTarget = conTarget.execute(text(sqlTableTargetExist)).scalar()
+    query_management_select_t(sqlTableTargetExist, 5, 5)
 
     # MANAGE RESULT
     if myResultTarget == prefixTableTarget + myTable:
@@ -44,13 +115,13 @@ def isTableExistInTarget(myTable):
 
     time.sleep(1)
 
+
 ############### FUNCTION: FIND IF A TABLE EXIST IN SOURCE
 def isTableExistInSource(myTable):
 
     sqlTableSourceExist = '''SELECT TABLE_NAME FROM information_schema.TABLES WHERE table_schema = \'''' + nameDbSource + '''\' AND TABLE_NAME = \'''' + prefixTableSource + myTable + '''\' ;'''
 
-    with engineSource.connect() as conSource:
-        myResultSource = conSource.execute(text(sqlTableSourceExist)).scalar()
+    query_management_select_s(sqlTableSourceExist, 5, 5)
 
     # MANAGE RESULT
     if myResultSource == prefixTableSource + myTable:
@@ -76,8 +147,8 @@ sqlContentsRulesJsonSource = '''SELECT rules FROM ''' + prefixTableSource + '''a
 ContentsRulesJsonSource = conSource.execute(text(sqlContentsRulesJsonSource)).scalar()
 
 # CLOSE CONNECTION
-conSource.close()
-engineSource.dispose()
+# conSource.close()
+# engineSource.dispose()
 
 # DISPLAY SPECIFIC SOURCE VALUES
 if superIdSource:
@@ -108,8 +179,8 @@ sqlTargetContentAssetId = '''SELECT MIN(id) AS id_content FROM ''' + prefixTable
 ContentAssetIdTarget = conTarget.execute(text(sqlTargetContentAssetId)).scalar()
 
 # CLOSE CONNECTION
-conTarget.close()
-engineTarget.dispose()
+# conTarget.close()
+# engineTarget.dispose()
 
 # DISPLAY SPECIFIC TARGET VALUES
 if BasicStageIdTarget:
@@ -150,10 +221,30 @@ for stepScript in listStepScripts:
     pathStepScript = dirStepScripts + '\\' + stepScript
     exec(compile(open(pathStepScript, 'rb').read(), pathStepScript, 'exec'))
 
+    time.sleep(5)
+
 
 print(colored('\nEND OF DATA MIGRATION!', 'green'))
+time.sleep(1)
 
-conTarget.close()
-engineTarget.dispose()
 
-engineSource.dispose()
+# CLOSE EXISTING CONNECTIONS
+try:
+    conTarget.close()
+except:
+    pass
+
+try:
+    conSource.close()
+except:
+    pass
+
+try:
+    engineTarget.dispose()
+except:
+    pass
+
+try:
+    engineSource.dispose()
+except:
+    pass
