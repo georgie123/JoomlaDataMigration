@@ -162,22 +162,47 @@ for t in contentsTables:
                     # print(tab(dfSource.head(10), headers='keys', tablefmt='psql', showindex=False))
                     # print(dfSource.shape[0])
 
+                    # For work in batch
+                    batch_queries = []
+                    batch_size = 100
+
                     # SQL TO INSERT IN TARGET
                     my_session = sessionmaker(bind=engineTarget)
                     session = my_session()
                     session.begin()
+
                     for index, row in dfSource.iterrows():
                         columns = ', '.join(row.index)
                         values = ', '.join(f"'{escape_value(v)}'" for v in row.values)
                         queryInsert = '''INSERT IGNORE INTO ''' + prefixTableTarget + t + f''' ({columns}) VALUES ({values}) ;'''
                         # print(queryInsert)
 
-                        session.execute(text(queryInsert.replace('fulltext', '`fulltext`')))
+                        queryInsert = queryInsert.replace('fulltext', '`fulltext`')
+
+                        # Add in batch
+                        batch_queries.append(queryInsert)
+
+                        # Run batch
+                        if len(batch_queries) == batch_size:
+                            # Build batch
+                            full_query = ' '.join(batch_queries)
+                            session.execute(text(full_query))
+                            print(str(len(batch_queries)) + ' queries in batch')
+                            # Empty batch
+                            batch_queries.clear()
+
+                    # Queries out the last batch
+                    if batch_queries:
+                        full_query = ' '.join(batch_queries)
+                        session.execute(text(full_query))
+                        print(str(len(batch_queries)) + ' queries in last batch')
+
+                    print(colored('OK, ' + str(dfSource.shape[0]) + ' insert(s) in the target table #_' + t + '.', 'green'))
 
                     session.commit()
                     session.close()
 
-                    print(colored('OK, ' + str(dfSource.shape[0]) + ' insert(s) in the target table #_' + t + '.', 'green'))
+                    time.sleep(1)
 
                     # UPDATE PUBLISH/DOWN FIELDS IN #_CONTENT AND "_TAGS
                     if t == 'content' or t == 'tags':
