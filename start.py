@@ -225,6 +225,12 @@ for stepScript in listStepScripts:
 
 
 print(colored('\nEND OF DATA MIGRATION!', 'green'))
+
+print(colored('Please:', 'yellow'))
+print(colored('- Clear cache from the Joomla administration.', 'yellow'))
+print(colored('- Update the database structure from the Joomla administration.', 'yellow'))
+print(colored('- Unlock the database from the Joomla administration.', 'yellow'))
+
 time.sleep(1)
 
 
