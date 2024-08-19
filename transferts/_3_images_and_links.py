@@ -4,18 +4,19 @@ from sqlalchemy.exc import OperationalError
 from tabulate import tabulate as tab
 import time
 
-
 print(colored('\nIMAGES AND LINKS', 'blue'))
 
-################ HARD LINKS FOR IMAGES
+################ HARD LINKS FOR IMAGES IN #_CONTENT
 print(colored('\nHard links for images', 'blue'))
 my_session_images = sessionmaker(bind=engineTarget)
 sessionImages = my_session_images()
 sessionImages.begin()
 
+# Note: we manage a potential 'users/' directory because some versions of the JCE editor can sometimes create it.
 query1 = u'''UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, 'src="users/', 'src="https://''' + domainTarget + '''/users/') WHERE introtext LIKE '%src="users/%' ;'''
 query_management_update(sessionImages, query1, 5, 5)
 
+# Note: we manage a potential 'users/' directory because some versions of the JCE editor can sometimes create it.
 query2 = u'''UPDATE ''' + prefixTableTarget + '''content SET `fulltext` = REPLACE(`fulltext`, 'src="users/', 'src="https://''' + domainTarget + '''/users/') WHERE `fulltext` LIKE '%src="users/%' ;'''
 query_management_update(sessionImages, query2, 5, 5)
 
@@ -36,7 +37,7 @@ sessionImages.close()
 time.sleep(1)
 
 
-# FIX URL REWRITE
+# FIX URL REWRITE IN #_CONTENT
 print(colored('\nFix URL rewrite in #_content', 'blue'))
 sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''content SET introtext = REPLACE(introtext, "/', id, '-', alias, '", "/', alias, '") ;') AS query1, CONCAT('UPDATE ''' + prefixTableTarget + '''content SET `fulltext` = REPLACE(`fulltext`, "/', id, '-', alias, '", "/', alias, '") ;') AS query2 FROM ''' + prefixTableTarget + '''content ;'''
 dfTargetTextUrlFix = pd.read_sql_query(sqlTargetTextUrlFix, engineTarget)
@@ -63,26 +64,29 @@ time.sleep(1)
 print(colored('The URL rewrite links has been fixed in the text fields of target table #_content (removing id from URL articles).', 'green'))
 
 
-################ UPDATE TARGET TEXT FIELDS FOR #_UCM_CONTENT
-print(colored('\nFields text in table #_ucm_content', 'blue'))
 
-my_session_text_ucm = sessionmaker(bind=engineTarget)
-sessionTextUcm = my_session_text_ucm()
-sessionTextUcm.begin()
+################ HARD LINKS FOR IMAGES IN #_UCM_CONTENT
+print(colored('\nHard links for images', 'blue'))
+my_session_images = sessionmaker(bind=engineTarget)
+sessionImages = my_session_images()
+sessionImages.begin()
 
-query1 = '''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, \'''' + domainSource + '''\', \'''' + domainTarget + '''\') ;'''
-query_management_update(sessionTextUcm, query1, 5, 5)
+# Note: we manage a potential 'users/' directory because some versions of the JCE editor can sometimes create it.
+query1 = u'''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, 'src="users/', 'src="https://''' + domainTarget + '''/users/') WHERE core_body LIKE '%src="users/%' ;'''
+query_management_update(sessionImages, query1, 5, 5)
 
-query2 = '''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, 'src="https://''' + domainTarget + '''/images/', 'src="https://''' + domainSource + '''/images/'), core_body = REPLACE(core_body, 'src="http://''' + domainTarget + '''/images/', 'src="http://''' + domainSource + '''/images/') ;'''
-query_management_update(sessionTextUcm, query2, 5, 5)
+query3 = u'''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, 'src="images/', 'src="https://''' + domainTarget + '''/images/') WHERE core_body LIKE '%src="images/%' ;'''
+query_management_update(sessionImages, query3, 5, 5)
 
-print(colored('Links to the website has been fixed in the field core_body of target table #_ucm_content.', 'green'))
+query5 = u'''UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, 'href="images/', 'href="https://''' + domainTarget + '''/images/') WHERE core_body LIKE '%href="images/%' ;'''
+query_management_update(sessionImages, query5, 5, 5)
 
-sessionTextUcm.close()
+print(colored('Now images use hard links.', 'green'))
+sessionImages.close()
 time.sleep(1)
 
 
-# FIX URL REWRITE
+# FIX URL REWRITE IN #_UCM_CONTENT
 print(colored('\nFix URL rewrite in #_ucm_content', 'blue'))
 
 sqlTargetTextUrlFix = '''SELECT CONCAT('UPDATE ''' + prefixTableTarget + '''ucm_content SET core_body = REPLACE(core_body, "/', id, '-', alias, '", "/', alias, '") ;') AS query1 FROM ''' + prefixTableTarget + '''content ;'''
